@@ -30,6 +30,17 @@ class TestIoService(unittest.TestCase):
         msg2to1Prime = self.ioservices[0].getIncomingMessageQueue().get()
         assert msg2to1 == msg2to1Prime
     
+    def test_broadcastMessaging(self):
+        msgToAll = {
+            "source": "someone",
+            "via": "sound-waves",
+            "protocol": "english",
+            "payload": {"type": "question", "content": "Heeeelp!"}
+        }
+        self.assertTrue(self.ioservices[0].sendMessage(msgToAll, None, ("255.255.255.255", self.ports[1])))
+        msgToAllPrime = self.ioservices[1].getIncomingMessageQueue().get()
+        self.assertEqual(msgToAll, msgToAllPrime)
+    
     def tearDown(self):
         [s.stop() for s in self.ioservices]
 
