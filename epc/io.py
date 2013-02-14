@@ -61,7 +61,7 @@ class IoService(Thread):
                 continue
             if not verify(message):
                 assertionLogger.error("Verification of the message {} failed, ignoring message...".format(message))
-            msgTraceLogger.info("Incoming message: source({source}), via({via}), protocol({protocol}), message({payload})".format(**message))
+            msgTraceLogger.info("Incoming message: {}".format(message))
             source = message["source"]
             if not self.peers.get(source):
                 self.peers[source] = addr
