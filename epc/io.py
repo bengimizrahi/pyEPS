@@ -70,3 +70,4 @@ class IoService(Thread):
         
     def stop(self):
         self.alive = False
+        self.join()
