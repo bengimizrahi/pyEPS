@@ -4,9 +4,11 @@ from epc.io import IoService
 
 class TestIoService(unittest.TestCase):
 
+    NUM_IOSERVICES = 2
+    PORT_MIN = 9000
+    
     def setUp(self):
-        PORT_MIN = 19040
-        self.ports = [PORT_MIN+i for i in range(2)]
+        self.ports = [self.PORT_MIN+i for i in range(self.NUM_IOSERVICES)]
         self.ioservices = [IoService(p) for p in self.ports]
         [s.start() for s in self.ioservices]
 
