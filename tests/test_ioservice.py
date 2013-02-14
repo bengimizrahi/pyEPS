@@ -43,6 +43,17 @@ class TestIoService(unittest.TestCase):
         msgToAllPrime = self.ioservices[1].getIncomingMessageQueue().get()
         self.assertEqual(msgToAll, msgToAllPrime)
     
+    def test_paging(self):
+        msgToAll = {
+            "source": "enb",
+            "via": "pch",
+            "payload": {"type": "paging-request", "id": "ue1"}
+        }
+        for p in range(self.PORT_MIN, self.PORT_MIN+100):
+            self.assertTrue(self.ioservices[0].sendMessage(msgToAll, None, ("", p)))
+        msgToAllPrime = self.ioservices[1].getIncomingMessageQueue().get()
+        self.assertEqual(msgToAllPrime["payload"]["id"], "ue1")
+    
     def tearDown(self):
         [s.stop() for s in self.ioservices]
 
