@@ -21,17 +21,23 @@ class IoService(object):
         self.incomingMessageCallback = callback
     
     def start(self):
+        if not self.incomingMessageCallback:
+            raise Exception("No incoming message callback is set")
         self.ioHandlerThread = threading.Thread(target=self.ioHandlerThreadFunc)
         self.callbackHandlerThread = threading.Thread(target=self.callbackHandlerThreadFunc)
         self.alive = True
         [t.start() for t in (self.ioHandlerThread, self.callbackHandlerThread)]
 
     def stop(self):
+        if not self.alive:
+            raise RuntimeError("Thread not started")
         self.alive = False
         self.eventQueue.put(("STOP", None))
         [t.join() for t in (self.ioHandlerThread, self.callbackHandlerThread)]
     
     def sendMessage(self, message, destination=None, addr=None):
+        if not self.alive:
+            raise RuntimeError("Thread not started")
         def snd(message, addr):
             successful = self.sock.sendto(str(message), addr) != -1
             return successful
