@@ -28,6 +28,14 @@ class Test_1_IoServiceAssertions(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.ioservice.stop()
     
+    def test_3_funcStartTimer(self):
+        with self.assertRaises(RuntimeError):
+            self.ioservice.startTimer("foo", 1.0, lambda: None)
+    
+    def test_4_funcCancelTimer(self):
+        with self.assertRaises(RuntimeError):
+            self.ioservice.cancelTimer("foo")
+    
     def test_5_funcSendMessage(self):
         with self.assertRaises(RuntimeError):
             self.ioservice.sendMessage({"message": "hello"}, None, ("", 9000))
