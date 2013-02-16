@@ -1,4 +1,4 @@
-from threading import Thread
+import threading
 from Queue import Queue
 import socket
 import time
@@ -9,19 +9,27 @@ from .utils.message import verify
 msgTraceLogger = logging.getLogger("msgTrace")
 assertionLogger = logging.getLogger("assertions")
 
-class IoService(Thread):
+class IoService(object):
     
-    def __init__(self, udpPort, incomingMessageQueue=None):
-        super(IoService, self).__init__()
+    def __init__(self, udpPort, incomingMessageCallback=None):
         self.udpPort = udpPort
-        self.incomingMessageOutputQueue = incomingMessageQueue or Queue()
+        self.eventQueue = Queue()
         self.alive = False
-        self.peers = {}
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        self.sock.setblocking(0)
-        self.sock.bind(("0", self.udpPort))
+        self.incomingMessageCallback = incomingMessageCallback
+    
+    def setIncomingMessageCallback(self, callback):
+        self.incomingMessageCallback = callback
+    
+    def start(self):
+        self.ioHandlerThread = threading.Thread(target=self.ioHandlerThreadFunc)
+        self.callbackHandlerThread = threading.Thread(target=self.callbackHandlerThreadFunc)
+        self.alive = True
+        [t.start() for t in (self.ioHandlerThread, self.callbackHandlerThread)]
+
+    def stop(self):
+        self.alive = False
+        self.eventQueue.put(("STOP", None))
+        [t.join() for t in (self.ioHandlerThread, self.callbackHandlerThread)]
     
     def sendMessage(self, message, destination=None, addr=None):
         def snd(message, addr):
@@ -43,16 +51,17 @@ class IoService(Thread):
             else:
                 return snd(message, peerAddr)
 
-    def getIncomingMessageQueue(self):
-        return self.incomingMessageOutputQueue
-
-    def run(self):
-        self.alive = True
+    def ioHandlerThreadFunc(self):
+        self.peers = {}
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.sock.settimeout(0.1)
+        self.sock.bind(("0", self.udpPort))
         while self.alive:
             try:
                 msg, addr = self.sock.recvfrom(2048)
-            except socket.error:
-                time.sleep(0.1)
+            except socket.timeout:
                 continue
             try:
                 message = eval(msg)
@@ -65,9 +74,15 @@ class IoService(Thread):
             source = message["source"]
             if not self.peers.get(source):
                 self.peers[source] = addr
-            self.incomingMessageOutputQueue.put(message)
+            self.eventQueue.put(("MESSAGE", message))
         self.sock.close()
-        
-    def stop(self):
-        self.alive = False
-        self.join()
+    
+    def callbackHandlerThreadFunc(self):
+        while self.alive:
+            event, param = self.eventQueue.get()
+            if event == "STOP":
+                break
+            elif event == "MESSAGE":
+                message = param
+                self.incomingMessageCallback(message)
+        [t.cancel() for t, _ in self.timers.values()]
