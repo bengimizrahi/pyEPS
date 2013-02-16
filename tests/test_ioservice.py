@@ -44,6 +44,43 @@ class Test_1_IoServiceAssertions(unittest.TestCase):
         pass
 
 
+class Test_2_IoServiceTimers(unittest.TestCase):
+    
+    def setUp(self):
+        self.ioservice = IoService(9000, lambda m: None)
+        self.ioservice.start()
+        self.cond = threading.Condition()
+        
+    def test_1_useTimer(self):
+        @notifyAfterCompletion(self.cond)
+        def onIoServiceApiFailure():
+            self.fail("IoService's timer mechanism did not work")
+        @notifyAfterCompletion(self.cond)
+        def onSuccess():
+            self.timer.cancel()
+        self.cond.acquire()
+        self.ioservice.startTimer("foo", 1, onSuccess)
+        self.timer = threading.Timer(2, onIoServiceApiFailure)
+        self.timer.start()
+        self.cond.wait()
+    
+    def test_2_cancelTimer(self):
+        @notifyAfterCompletion(self.cond)
+        def onSuccess():
+            self.fail("Timer should not have been able to expire")
+        @notifyAfterCompletion(self.cond)
+        def cancelIoServiceTimerCallback():
+            self.ioservice.cancelTimer("foo")
+        self.cond.acquire()
+        self.ioservice.startTimer("foo", 2, onSuccess)
+        self.timer = threading.Timer(1, cancelIoServiceTimerCallback)
+        self.timer.start()
+        self.cond.wait()
+
+    def tearDown(self):
+        self.ioservice.stop()
+
+
 class Test_3_IoService(unittest.TestCase):
 
     NUM_IOSERVICES = 2
