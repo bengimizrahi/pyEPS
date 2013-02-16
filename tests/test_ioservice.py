@@ -15,6 +15,27 @@ def notifyAfterCompletion(condition):
     return newdec
 
 
+class Test_1_IoServiceAssertions(unittest.TestCase):
+    
+    def setUp(self):
+        self.ioservice = IoService(9000)
+    
+    def test_1_funcStart(self):
+        with self.assertRaises(Exception):
+            self.ioservice.start()
+    
+    def test_2_funcStop(self):
+        with self.assertRaises(RuntimeError):
+            self.ioservice.stop()
+    
+    def test_5_funcSendMessage(self):
+        with self.assertRaises(RuntimeError):
+            self.ioservice.sendMessage({"message": "hello"}, None, ("", 9000))
+
+    def tearDown(self):
+        pass
+
+
 class Test_3_IoService(unittest.TestCase):
 
     NUM_IOSERVICES = 2
