@@ -12,7 +12,7 @@ class TestIoService(unittest.TestCase):
         self.ioservices = [IoService(p) for p in self.ports]
         [s.start() for s in self.ioservices]
 
-    def test_basicMessaging(self):
+    def test_1_basicMessaging(self):
         msg1to2 = {
             "source": "1",
             "via": "air",
@@ -32,7 +32,7 @@ class TestIoService(unittest.TestCase):
         msg2to1Prime = self.ioservices[0].getIncomingMessageQueue().get()
         self.assertEqual(msg2to1, msg2to1Prime)
     
-    def test_broadcastMessaging(self):
+    def test_2_broadcastMessaging(self):
         msgToAll = {
             "source": "someone",
             "via": "sound-waves",
@@ -43,7 +43,7 @@ class TestIoService(unittest.TestCase):
         msgToAllPrime = self.ioservices[1].getIncomingMessageQueue().get()
         self.assertEqual(msgToAll, msgToAllPrime)
     
-    def test_paging(self):
+    def test_3_paging(self):
         msgToAll = {
             "source": "enb",
             "via": "pch",
