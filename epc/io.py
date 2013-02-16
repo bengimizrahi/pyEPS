@@ -16,6 +16,7 @@ class IoService(object):
         self.eventQueue = Queue()
         self.alive = False
         self.incomingMessageCallback = incomingMessageCallback
+        self.timers = {}
     
     def setIncomingMessageCallback(self, callback):
         self.incomingMessageCallback = callback
@@ -34,6 +35,27 @@ class IoService(object):
         self.alive = False
         self.eventQueue.put(("STOP", None))
         [t.join() for t in (self.ioHandlerThread, self.callbackHandlerThread)]
+    
+    def startTimer(self, name, duration, callback):
+        if not self.alive:
+            raise RuntimeError("Thread not started")
+        if self.timers.get(name):
+            raise Exception("A running timer present for '{}'".format(name))
+        timerContext = (threading.Timer(duration, self.onTimerExpiration, args=[name]), callback)
+        timerContext[0].start()
+        self.timers[name] = timerContext
+    
+    def cancelTimer(self, name):
+        if not self.alive:
+            raise RuntimeError("Thread not started")
+        if not self.timers.get(name):
+            raise Exception("No running timer named '{}' found".format(name))
+        self.timers[name][0].cancel()
+    
+    def onTimerExpiration(self, name):
+        timerContext = self.timers[name]
+        self.eventQueue.put(("TIMEOUT", timerContext[1]))
+        del self.timers[name]
     
     def sendMessage(self, message, destination=None, addr=None):
         if not self.alive:
@@ -91,4 +113,7 @@ class IoService(object):
             elif event == "MESSAGE":
                 message = param
                 self.incomingMessageCallback(message)
+            elif event == "TIMEOUT":
+                timerExpirationCallback = param
+                timerExpirationCallback()
         [t.cancel() for t, _ in self.timers.values()]
