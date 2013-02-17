@@ -18,7 +18,7 @@ def notifyAfterCompletion(condition):
 class Test_1_IoServiceAssertions(unittest.TestCase):
     
     def setUp(self):
-        self.ioservice = IoService(9000)
+        self.ioservice = IoService("service", 9000)
     
     def test_1_funcStart(self):
         with self.assertRaises(Exception):
@@ -47,7 +47,7 @@ class Test_1_IoServiceAssertions(unittest.TestCase):
 class Test_2_IoServiceTimers(unittest.TestCase):
     
     def setUp(self):
-        self.ioservice = IoService(9000, lambda m: None)
+        self.ioservice = IoService("timer", 9000, lambda s, v, p, m: None)
         self.ioservice.start()
         self.cond = threading.Condition()
         
@@ -83,13 +83,8 @@ class Test_2_IoServiceTimers(unittest.TestCase):
 
 class Test_3_IoService(unittest.TestCase):
 
-    NUM_IOSERVICES = 2
-    PORT_MIN = 9000
-    
     def setUp(self):
-        self.ports = [self.PORT_MIN+i for i in range(self.NUM_IOSERVICES)]
-        self.ioservices = [IoService(p) for p in self.ports]
-        self.cond = threading.Condition()
+        self.ioservices = [IoService(str(i), 9000 + i) for i in range(2)] 
 
     def test_1_basicMessaging(self):
         msg1to2 = {
