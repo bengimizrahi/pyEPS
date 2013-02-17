@@ -57,21 +57,15 @@ class IoService(object):
         self.eventQueue.put(("TIMEOUT", timerContext[1]))
         del self.timers[name]
     
-    def sendMessage(self, message, destination=None, addr=None):
+    def sendMessage(self, destination, via, protocol, message):
         if not self.alive:
             raise RuntimeError("Thread not started")
         def snd(message, addr):
             successful = self.sock.sendto(str(message), addr) != -1
             return successful
-        if (not destination) and (not addr):
-            assertionLogger.error("Neither 'destination' nor 'addr' is provided, returning False...")
-            return False
-        if not verify(message):
-            assertionLogger.error("Verification of the message {} failed, ignoring message...".format(message))
-            return False
-        if (not destination) and addr:
-            return snd(message, addr)
-        elif destination:
+        if isinstance(destination, tuple):
+            return snd(message, destination)
+        elif isinstance(destination, str):
             peerAddr = self.peers.get(destination)
             if not peerAddr:
                 assertionLogger.error("No peer found associated with '{}', ignoring message...".format(destination))
