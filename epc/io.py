@@ -11,7 +11,8 @@ assertionLogger = logging.getLogger("assertions")
 
 class IoService(object):
     
-    def __init__(self, udpPort, incomingMessageCallback=None):
+    def __init__(self, name, udpPort, incomingMessageCallback=None):
+        self.name = name
         self.udpPort = udpPort
         self.eventQueue = Queue()
         self.alive = False
