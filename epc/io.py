@@ -68,8 +68,7 @@ class IoService(object):
         elif isinstance(destination, str):
             peerAddr = self.peers.get(destination)
             if not peerAddr:
-                assertionLogger.error("No peer found associated with '{}', ignoring message...".format(destination))
-                return False
+                raise Exception("No peer found associated with '{}', ignoring message...".format(destination))
             else:
                 return snd(message, peerAddr)
 
