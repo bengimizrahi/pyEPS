@@ -62,7 +62,13 @@ class IoService(object):
         if not self.alive:
             raise RuntimeError("Thread not started")
         def snd(message, addr):
-            successful = self.sock.sendto(str(message), addr) != -1
+            packet = {
+                "source": self.name,
+                "via": via,
+                "protocol": protocol,
+                "message": message,
+            }
+            successful = self.sock.sendto(str(packet), addr) != -1
             return successful
         if isinstance(destination, tuple):
             return snd(message, destination)
@@ -86,17 +92,15 @@ class IoService(object):
             except socket.timeout:
                 continue
             try:
-                message = eval(msg)
+                packet = eval(msg)
             except SyntaxError:
                 assertionLogger.error("eval({}) raised SyntaxError, ignoring message...".format(msg))
                 continue
-            if not verify(message):
-                assertionLogger.error("Verification of the message {} failed, ignoring message...".format(message))
-            msgTraceLogger.info("Incoming message: {}".format(message))
-            source = message["source"]
+            msgTraceLogger.info("Incoming packet: {}".format(packet))
+            source = packet["source"]
             if not self.peers.get(source):
                 self.peers[source] = addr
-            self.eventQueue.put(("MESSAGE", message))
+            self.eventQueue.put(("PACKET", packet))
         self.sock.close()
     
     def callbackHandlerThreadFunc(self):
@@ -104,9 +108,9 @@ class IoService(object):
             event, param = self.eventQueue.get()
             if event == "STOP":
                 break
-            elif event == "MESSAGE":
-                message = param
-                self.incomingMessageCallback(message)
+            elif event == "PACKET":
+                packet = param
+                self.incomingMessageCallback(packet["source"], packet["via"], packet["protocol"], packet["message"])
             elif event == "TIMEOUT":
                 timerExpirationCallback = param
                 timerExpirationCallback()
