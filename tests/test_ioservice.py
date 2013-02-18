@@ -39,7 +39,7 @@ class Test_2_IoServiceTimers(unittest.TestCase):
         self.ioservice = IoService("timer", 9000, lambda s, v, p, m: None)
         self.ioservice.start()
         
-    def test_1_useTimer(self):
+    def test_1_startTimer(self):
         def onSuccess():
             self.successful = True
         self.successful = False
@@ -56,6 +56,33 @@ class Test_2_IoServiceTimers(unittest.TestCase):
         self.ioservice.cancelTimer("foo")
         time.sleep(0.2)
         self.assertFalse(self.expired)
+
+    def test_3_restartTimer(self):
+        def onExpiration():
+            self.count += 1
+            if self.count < 2:
+                self.ioservice.startTimer("foo", 0.05, onExpiration)
+        self.count = 0
+        self.ioservice.startTimer("foo", 0.05, onExpiration)
+        time.sleep(0.2)
+        self.assertEqual(self.count, 2)
+
+    def test_4_restartOngoingTimer(self):
+        def onExpiration():
+            pass
+        self.ioservice.startTimer("foo", 0.1, onExpiration)
+        with self.assertRaises(Exception):
+            self.ioservice.startTimer("foo", 0.1, onExpiration)
+
+    def test_5_restartCanceledTimer(self):
+        def onExpiration():
+            self.successful = True
+        self.ioservice.startTimer("foo", 0.1, onExpiration)
+        time.sleep(0.05)
+        self.ioservice.cancelTimer("foo")
+        self.ioservice.startTimer("foo", 0.1, onExpiration)
+        time.sleep(0.2)
+        self.assertTrue(self.successful)
 
     def tearDown(self):
         self.ioservice.stop()

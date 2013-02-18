@@ -52,6 +52,7 @@ class IoService(object):
         if not self.timers.get(name):
             raise Exception("No running timer named '{}' found".format(name))
         self.timers[name][0].cancel()
+        del self.timers[name]
     
     def onTimerExpiration(self, name):
         timerContext = self.timers[name]
