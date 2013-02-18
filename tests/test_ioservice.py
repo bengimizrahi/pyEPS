@@ -39,7 +39,7 @@ class Test_2_IoServiceTimers(unittest.TestCase):
         self.ioservice = IoService("timer", 9000, lambda s, v, p, m: None)
         self.ioservice.start()
         
-    def test_1_useTimer(self):
+    def test_1_startTimer(self):
         def onSuccess():
             self.successful = True
         self.successful = False
