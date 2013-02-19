@@ -84,12 +84,14 @@ class IoService(object):
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.sock.settimeout(0.1)
-        self.sock.bind(("0", self.udpPort))
+        self.sock.bind(("127.0.0.1", self.udpPort))
         while self.alive:
             try:
                 msg, addr = self.sock.recvfrom(2048)
             except socket.timeout:
                 continue
+	    except socket.error:
+	        continue
             try:
                 packet = eval(msg)
             except SyntaxError:
