@@ -1,7 +1,7 @@
 import unittest
 import time
 
-from epc.io import IoService
+from epc.io import IoService, localhost
 
 
 class Test_1_IoServiceAssertions(unittest.TestCase):
@@ -27,7 +27,7 @@ class Test_1_IoServiceAssertions(unittest.TestCase):
     
     def test_5_funcSendMessage(self):
         with self.assertRaises(RuntimeError):
-            self.ioservice.sendMessage(("", 9000), "interface", "channelInfo", {"key": "value"})
+            self.ioservice.sendMessage((localhost(), 9000), "interface", "channelInfo", {"key": "value"})
 
     def tearDown(self):
         pass
@@ -110,7 +110,7 @@ class Test_3_IoService(unittest.TestCase):
         self.ioservices[0].setIncomingMessageCallback(onIncomingMessage0)
         self.ioservices[1].setIncomingMessageCallback(onIncomingMessage1)
         [s.start() for s in self.ioservices]
-        self.assertTrue(self.ioservices[0].sendMessage(("127.0.0.1", 9001), "air", "smoke", msg0to1))
+        self.assertTrue(self.ioservices[0].sendMessage((localhost(), 9001), "air", "smoke", msg0to1))
         time.sleep(0.1)
         self.assertTrue(self.successful)
     
@@ -142,7 +142,7 @@ class Test_3_IoService(unittest.TestCase):
         self.ioservices[1].setIncomingMessageCallback(onIncomingMessage)
         [s.start() for s in self.ioservices]
         for p in range(9001, 9100):
-            self.assertTrue(self.ioservices[0].sendMessage(("127.0.0.1", p), "pch", None, msgToAll))
+            self.assertTrue(self.ioservices[0].sendMessage((localhost(), p), "pch", None, msgToAll))
         time.sleep(0.1)
         self.assertTrue(self.successful)
     
