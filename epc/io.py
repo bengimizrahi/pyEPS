@@ -57,14 +57,14 @@ class IoService(object):
         self.eventQueue.put(("TIMEOUT", timerContext[1]))
         del self.timers[name]
     
-    def sendMessage(self, destination, via, protocol, message):
+    def sendMessage(self, destination, interface, channelInfo, message):
         if not self.alive:
             raise RuntimeError("Thread not started")
         def snd(message, addr):
             packet = {
                 "source": self.name,
-                "via": via,
-                "protocol": protocol,
+                "interface": interface,
+                "channelInfo": channelInfo,
                 "message": message,
             }
             successful = self.sock.sendto(str(packet), addr) != -1
@@ -109,7 +109,8 @@ class IoService(object):
                 break
             elif event == "PACKET":
                 packet = param
-                self.incomingMessageCallback(packet["source"], packet["via"], packet["protocol"], packet["message"])
+                self.incomingMessageCallback(packet["source"], packet["interface"],
+                                             packet["channelInfo"], packet["message"])
             elif event == "TIMEOUT":
                 timerExpirationCallback = param
                 timerExpirationCallback()
