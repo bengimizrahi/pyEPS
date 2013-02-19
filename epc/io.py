@@ -2,10 +2,18 @@ import threading
 from Queue import Queue
 import socket
 import logging
+import sys
 
 
 msgTraceLogger = logging.getLogger("msgTrace")
 assertionLogger = logging.getLogger("assertions")
+
+def localhost():
+    return {
+        "linux2": "0.0.0.0",
+        "darwin": "0.0.0.0",
+        "win32": "127.0.0.1",}.get(sys.platform, "0.0.0.0")
+
 
 class IoService(object):
     
@@ -84,7 +92,7 @@ class IoService(object):
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.sock.settimeout(0.1)
-        self.sock.bind(("127.0.0.1", self.udpPort))
+        self.sock.bind((localhost(), self.udpPort))
         while self.alive:
             try:
                 msg, addr = self.sock.recvfrom(2048)
