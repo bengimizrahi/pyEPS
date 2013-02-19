@@ -4,7 +4,6 @@ import socket
 import time
 import logging
 
-from .utils.message import verify
 
 msgTraceLogger = logging.getLogger("msgTrace")
 assertionLogger = logging.getLogger("assertions")
