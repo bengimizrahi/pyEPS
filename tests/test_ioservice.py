@@ -27,7 +27,7 @@ class Test_1_IoServiceAssertions(unittest.TestCase):
     
     def test_5_funcSendMessage(self):
         with self.assertRaises(RuntimeError):
-            self.ioservice.sendMessage(("", 9000), "via", "protocol", {"key": "value"})
+            self.ioservice.sendMessage(("", 9000), "interface", "channelInfo", {"key": "value"})
 
     def tearDown(self):
         pass
@@ -100,10 +100,10 @@ class Test_3_IoService(unittest.TestCase):
         msg1to0 = {
             "content": "Yes, there is!",
         }
-        def onIncomingMessage0(source, via, protocol, message):
+        def onIncomingMessage0(source, interface, channelInfo, message):
             self.assertEqual(message, msg1to0)
             self.successful = True
-        def onIncomingMessage1(source, via, protocol, message):
+        def onIncomingMessage1(source, interface, channelInfo, message):
             self.assertEqual(message, msg0to1)
             self.assertTrue(self.ioservices[1].sendMessage("0", "river", "bottle", msg1to0))
         self.successful = False
@@ -118,11 +118,11 @@ class Test_3_IoService(unittest.TestCase):
         msgToAll = {
             "content": "Heeeelp!",
         }
-        def onIncomingMessage(source, via, protocol, message):
+        def onIncomingMessage(source, interface, channelInfo, message):
             self.assertEqual(msgToAll, message)
             self.successful = True
         self.successful = False
-        self.ioservices[0].setIncomingMessageCallback(lambda s, v, p, m: None)
+        self.ioservices[0].setIncomingMessageCallback(lambda s, i, c, m: None)
         self.ioservices[1].setIncomingMessageCallback(onIncomingMessage)
         [s.start() for s in self.ioservices]
         self.assertTrue(self.ioservices[0].sendMessage(("255.255.255.255", 9001), "sound-waves", "english", msgToAll))
@@ -134,11 +134,11 @@ class Test_3_IoService(unittest.TestCase):
             "type": "paging-request",
             "id": "1",
         }
-        def onIncomingMessage(source, via, protocol, message):
+        def onIncomingMessage(source, interface, channelInfo, message):
             self.assertEqual(message["id"], "1")
             self.successful = True
         self.successful = False
-        self.ioservices[0].setIncomingMessageCallback(lambda s, p, v, m: None)
+        self.ioservices[0].setIncomingMessageCallback(lambda s, i, c, m: None)
         self.ioservices[1].setIncomingMessageCallback(onIncomingMessage)
         [s.start() for s in self.ioservices]
         for p in range(9001, 9100):
@@ -148,10 +148,10 @@ class Test_3_IoService(unittest.TestCase):
     
     def test_4_noPeerFound(self):
         with self.assertRaises(Exception):
-            self.ioservices[0].setIncomingMessageCallback(lambda s, p, v, m: None)
-            self.ioservices[1].setIncomingMessageCallback(lambda s, p, v, m: None)
+            self.ioservices[0].setIncomingMessageCallback(lambda s, i, c, m: None)
+            self.ioservices[1].setIncomingMessageCallback(lambda s, i, c, m: None)
             [s.start() for s in self.ioservices]
-            self.ioservices[0].sendMessage(("1", "via", "protocol", {"key": "value"}))
+            self.ioservices[0].sendMessage(("1", "interface", "channelInfo", {"key": "value"}))
     def tearDown(self):
         [s.stop() for s in self.ioservices]
 
