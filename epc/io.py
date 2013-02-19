@@ -1,7 +1,6 @@
 import threading
 from Queue import Queue
 import socket
-import time
 import logging
 
 
