@@ -98,8 +98,8 @@ class IoService(object):
                 msg, addr = self.sock.recvfrom(2048)
             except socket.timeout:
                 continue
-	    except socket.error:
-	        continue
+            except socket.error:
+                continue
             try:
                 packet = eval(msg)
             except SyntaxError:
