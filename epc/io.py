@@ -62,7 +62,7 @@ class IoService(object):
     
     def onTimerExpiration(self, name):
         timerContext = self.timers[name]
-        self.eventQueue.put(("TIMEOUT", timerContext[1]))
+        self.eventQueue.put(("TIMEOUT", (name, timerContext[1])))
         del self.timers[name]
     
     def sendMessage(self, destination, interface, channelInfo, message):
@@ -122,6 +122,6 @@ class IoService(object):
                 self.incomingMessageCallback(packet["source"], packet["interface"],
                                              packet["channelInfo"], packet["message"])
             elif event == "TIMEOUT":
-                timerExpirationCallback = param
-                timerExpirationCallback()
+                name, timerExpirationCallback = param
+                timerExpirationCallback(name)
         [t.cancel() for t, _ in self.timers.values()]
