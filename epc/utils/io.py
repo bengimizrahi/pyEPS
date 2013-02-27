@@ -17,22 +17,23 @@ def localhost():
 
 class IoService(object):
     
-    def __init__(self, name, udpPort, incomingMessageCallback=None):
+    def __init__(self, name, udpPort):
         self.name = name
         self.udpPort = udpPort
         self.eventQueue = Queue()
         self.alive = False
-        self.incomingMessageCallback = incomingMessageCallback
+        self.incomingMessageCallback = []
         self.timers = {}
+
+    def addIncomingMessageCallback(self, callback):
+        self.incomingMessageCallback.append(callback)
     
-    def setIncomingMessageCallback(self, callback):
-        self.incomingMessageCallback = callback
+    def removeIncomingMessageCallback(self, callback):
+        self.incomingMessageCallback.remove(callback)
     
     def start(self):
-        if not self.incomingMessageCallback:
-            raise Exception("No incoming message callback is set")
-        self.ioHandlerThread = threading.Thread(target=self.ioHandlerThreadFunc)
-        self.callbackHandlerThread = threading.Thread(target=self.callbackHandlerThreadFunc)
+        self.ioHandlerThread = threading.Thread(target=self.__ioHandlerThreadFunc__)
+        self.callbackHandlerThread = threading.Thread(target=self.__callbackHandlerThreadFunc__)
         self.alive = True
         [t.start() for t in (self.ioHandlerThread, self.callbackHandlerThread)]
 
@@ -48,7 +49,7 @@ class IoService(object):
             raise RuntimeError("Thread not started")
         if self.timers.get(name):
             raise Exception("A running timer present for '{}'".format(name))
-        timerContext = (threading.Timer(duration, self.onTimerExpiration, args=[name]), callback)
+        timerContext = (threading.Timer(duration, self.__onTimerExpiration__, args=[name]), callback)
         timerContext[0].start()
         self.timers[name] = timerContext
     
@@ -60,7 +61,7 @@ class IoService(object):
         self.timers[name][0].cancel()
         del self.timers[name]
     
-    def onTimerExpiration(self, name):
+    def __onTimerExpiration__(self, name):
         timerContext = self.timers[name]
         self.eventQueue.put(("TIMEOUT", (name, timerContext[1])))
         del self.timers[name]
@@ -86,7 +87,7 @@ class IoService(object):
             else:
                 return snd(message, peerAddr)
 
-    def ioHandlerThreadFunc(self):
+    def __ioHandlerThreadFunc__(self):
         self.peers = {}
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -112,15 +113,16 @@ class IoService(object):
             self.eventQueue.put(("PACKET", packet))
         self.sock.close()
     
-    def callbackHandlerThreadFunc(self):
+    def __callbackHandlerThreadFunc__(self):
         while self.alive:
             event, param = self.eventQueue.get()
             if event == "STOP":
                 break
             elif event == "PACKET":
                 packet = param
-                self.incomingMessageCallback(packet["source"], packet["interface"],
-                                             packet["channelInfo"], packet["message"])
+                for cb in self.incomingMessageCallback:
+                    cb(packet["source"], packet["interface"], packet["channelInfo"],
+                        packet["message"])
             elif event == "TIMEOUT":
                 name, timerExpirationCallback = param
                 timerExpirationCallback(name)
