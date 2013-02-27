@@ -17,20 +17,21 @@ def localhost():
 
 class IoService(object):
     
-    def __init__(self, name, udpPort, incomingMessageCallback=None):
+    def __init__(self, name, udpPort):
         self.name = name
         self.udpPort = udpPort
         self.eventQueue = Queue()
         self.alive = False
-        self.incomingMessageCallback = incomingMessageCallback
+        self.incomingMessageCallback = []
         self.timers = {}
+
+    def addIncomingMessageCallback(self, callback):
+        self.incomingMessageCallback.append(callback)
     
-    def setIncomingMessageCallback(self, callback):
-        self.incomingMessageCallback = callback
+    def removeIncomingMessageCallback(self, callback):
+        self.incomingMessageCallback.remove(callback)
     
     def start(self):
-        if not self.incomingMessageCallback:
-            raise Exception("No incoming message callback is set")
         self.ioHandlerThread = threading.Thread(target=self.__ioHandlerThreadFunc__)
         self.callbackHandlerThread = threading.Thread(target=self.__callbackHandlerThreadFunc__)
         self.alive = True
@@ -119,8 +120,9 @@ class IoService(object):
                 break
             elif event == "PACKET":
                 packet = param
-                self.incomingMessageCallback(packet["source"], packet["interface"],
-                                             packet["channelInfo"], packet["message"])
+                for cb in self.incomingMessageCallback:
+                    cb(packet["source"], packet["interface"], packet["channelInfo"],
+                        packet["message"])
             elif event == "TIMEOUT":
                 name, timerExpirationCallback = param
                 timerExpirationCallback(name)
