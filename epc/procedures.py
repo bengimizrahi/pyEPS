@@ -16,9 +16,12 @@ class RrcConnectionEstablishmentProcedure(object):
     def execute(self):
         self.ioService.addIncomingMessageCallback(self.__incomingMessageCallback__)
         self.__sendPrachPreamble__()
-    
-    def __notifyProcedureCompletion__(self, result):
+
+    def terminate(self):
         self.ioService.removeIncomingMessageCallback(self.__incomingMessageCallback__)
+
+    def __notifyProcedureCompletion__(self, result):
+        self.terminate()
         self.procedureCompleteCallback(result)
 
     def __incomingMessageCallback__(self, source, interface, channelInfo, message):
