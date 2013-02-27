@@ -1,7 +1,7 @@
 import unittest
 import time
 
-from epc.io import IoService, localhost
+from epc.utils.io import IoService, localhost
 
 
 class Test_1_IoServiceAssertions(unittest.TestCase):
