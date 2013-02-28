@@ -10,8 +10,9 @@ class RrcConnectionEstablishmentProcedure(object):
         self.prachPreambleRepeatDelay = prachPreambleRepeatDelay
         self.enbAddress = enbAddress
         self.ioService = ioService
-        self.attemptNo = 0
         self.procedureCompleteCallback = procedureCompleteCallback
+        self.procedureCompleteCallbackExecuted = False
+        self.attemptNo = 0
 
     def execute(self):
         self.ioService.addIncomingMessageCallback(self.__incomingMessageCallback__)
@@ -21,7 +22,6 @@ class RrcConnectionEstablishmentProcedure(object):
         self.ioService.removeIncomingMessageCallback(self.__incomingMessageCallback__)
 
     def __notifyProcedureCompletion__(self, result):
-        self.terminate()
         self.procedureCompleteCallback(result)
 
     def __incomingMessageCallback__(self, source, interface, channelInfo, message):
@@ -33,6 +33,9 @@ class RrcConnectionEstablishmentProcedure(object):
             # assume RRC Connection Setup is processed successfully
             self.ioService.cancelTimer("rrcConnectionSetupTimeout")
             self.__sendRrcConnectionSetupComplete__()
+            if not self.procedureCompleteCallbackExecuted:
+                self.__notifyProcedureCompletion__(self.Success)
+                self.procedureCompleteCallbackExecuted = True
         
     def __sendPrachPreamble__(self):
         self.attemptNo += 1
@@ -59,4 +62,3 @@ class RrcConnectionEstablishmentProcedure(object):
     def __sendRrcConnectionSetupComplete__(self):
         interface, channelInfo, message = rrcConnectionSetupComplete(5656, "2323", {})
         self.ioService.sendMessage(self.enbAddress, interface, channelInfo, message)
-        self.__notifyProcedureCompletion__(self.Success)
