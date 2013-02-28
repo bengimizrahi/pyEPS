@@ -10,7 +10,8 @@ class Test_1_RrcConnectionProcedure(unittest.TestCase):
         self.enbIoService = IoService("enb", 9000)
         self.ueIoService = IoService("ue", 9001)
         [s.start() for s in self.enbIoService, self.ueIoService]
-        self.procedure = RrcConnectionEstablishmentProcedure(5, 0.7, (localhost(), 9000),
+        self.procedure = RrcConnectionEstablishmentProcedure(
+            {"nasMessageType": "attachRequest"}, 5, 0.7, (localhost(), 9000),
             self.ueIoService, self.__procedureCompleteCallback__)
     
     def tearDown(self):

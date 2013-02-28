@@ -4,8 +4,9 @@ class RrcConnectionEstablishmentProcedure(object):
     
     Success, ErrorNoRandomAccessResponse, ErrorNoRrcConnectionSetup = range(3)
     
-    def __init__(self, maxPrachPreambleAttempts, prachPreambleRepeatDelay, enbAddress, ioService,
+    def __init__(self, initialNasMessage, maxPrachPreambleAttempts, prachPreambleRepeatDelay, enbAddress, ioService,
             procedureCompleteCallback):
+        self.initialNasMessage = initialNasMessage
         self.maxPrachPreambleAttempts = maxPrachPreambleAttempts # Defined as PREAMBLE_TRANS_MAX in 3GPP, this is actually read from SIB2
         self.prachPreambleRepeatDelay = prachPreambleRepeatDelay
         self.enbAddress = enbAddress
@@ -60,5 +61,5 @@ class RrcConnectionEstablishmentProcedure(object):
         self.__notifyProcedureCompletion__(self.ErrorNoRrcConnectionSetup)
     
     def __sendRrcConnectionSetupComplete__(self):
-        interface, channelInfo, message = rrcConnectionSetupComplete(5656, "2323", {})
+        interface, channelInfo, message = rrcConnectionSetupComplete(5656, "2323", self.initialNasMessage)
         self.ioService.sendMessage(self.enbAddress, interface, channelInfo, message)
