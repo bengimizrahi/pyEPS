@@ -2,7 +2,7 @@ import unittest
 import time
 
 from epc.utils.io import IoService, localhost
-from epc.procedures import RrcConnectionEstablishmentProcedure
+from epc.procedures.ue.rrc import RrcConnectionEstablishmentProcedure
 
 class Test_1_RrcConnectionProcedure(unittest.TestCase):
 
