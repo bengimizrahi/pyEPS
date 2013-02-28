@@ -45,6 +45,20 @@ class Test_1_RrcConnectionProcedure(unittest.TestCase):
         self.enbIoService.sendMessage("ue", None, None, {"messageName": "rrcConnectionSetup"})
         time.sleep(0.3)
         self.assertEqual(self.result, RrcConnectionEstablishmentProcedure.Success)
-        
+
+    def test_4_rrcConnectionEstablishedButSubsequentSetupsIgnored(self):
+        self.result = None
+        self.procedure.execute()
+        time.sleep(0.4) # smaller than 0.7
+        self.enbIoService.sendMessage("ue", None, None, {"messageName": "randomAccessResponse"})
+        time.sleep(0.5) # smaller than 1.0
+        self.enbIoService.sendMessage("ue", None, None, {"messageName": "rrcConnectionSetup"})
+        time.sleep(0.3)
+        self.assertEqual(self.result, RrcConnectionEstablishmentProcedure.Success)
+        self.result = None
+        self.enbIoService.sendMessage("ue", None, None, {"messageName": "rrcConnectionSetup"})
+        time.sleep(0.2)
+        self.assertEqual(self.result, None)
+
 if __name__ == "__main__":
     unittest.main()
