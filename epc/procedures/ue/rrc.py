@@ -2,13 +2,16 @@ from ...messages import randomAccessRequest, rrcConnectionRequest, rrcConnection
 
 class RrcConnectionEstablishmentProcedure(object):
     
-    Success, ErrorNoRandomAccessResponse, ErrorNoRrcConnectionSetup = range(3)
+    Success, ErrorNoRandomAccessResponse, ErrorNoContentionResolutionIdentity, ErrorNoRrcConnectionSetup = range(4)
     
-    def __init__(self, initialNasMessage, maxPrachPreambleAttempts, prachPreambleRepeatDelay, enbAddress, ioService,
-            procedureCompleteCallback):
+    def __init__(self, initialNasMessage, maxPrachPreambleAttempts, prachPreambleRepeatDelay, 
+                 macContentionResolutionTimeout, rrcConnectionSetupTimeoutT300, enbAddress, ioService,
+                 procedureCompleteCallback):
         self.initialNasMessage = initialNasMessage
         self.maxPrachPreambleAttempts = maxPrachPreambleAttempts # Defined as PREAMBLE_TRANS_MAX in 3GPP, this is actually read from SIB2
         self.prachPreambleRepeatDelay = prachPreambleRepeatDelay
+        self.macContentionResolutionTimeout = macContentionResolutionTimeout
+        self.rrcConnectionSetupTimeoutT300 = rrcConnectionSetupTimeoutT300
         self.enbAddress = enbAddress
         self.ioService = ioService
         self.procedureCompleteCallback = procedureCompleteCallback
@@ -30,9 +33,12 @@ class RrcConnectionEstablishmentProcedure(object):
             # assume Random Access Response is processed successfully
             self.ioService.cancelTimer("randomAccessResponseTimeout")
             self.__sendRrcConnectionRequest__()
+        if message["messageName"] == "contentionResolutionIdentity":
+            # assume RRC Connection Setup is processed successfully
+            self.ioService.cancelTimer("macContentionResolutionTimeout")
         if message["messageName"] == "rrcConnectionSetup":
             # assume RRC Connection Setup is processed successfully
-            self.ioService.cancelTimer("rrcConnectionSetupTimeout")
+            self.ioService.cancelTimer("rrcConnectionSetupTimeoutT300")
             self.__sendRrcConnectionSetupComplete__()
             if not self.procedureCompleteCallbackExecuted:
                 self.__notifyProcedureCompletion__(self.Success)
@@ -52,13 +58,18 @@ class RrcConnectionEstablishmentProcedure(object):
             self.__notifyProcedureCompletion__(self.ErrorNoRandomAccessResponse)
 
     def __sendRrcConnectionRequest__(self):
-        interface, channelInfo, message = rrcConnectionRequest(34343, 9989982, "moSignalling")
+        interface, channelInfo, message = rrcConnectionRequest(34343, "randomValue", 9989982, "moSignalling")
         self.ioService.sendMessage(self.enbAddress, interface, channelInfo, message)
-        self.ioService.startTimer("rrcConnectionSetupTimeout", 1.0,
-            self.__onRccConnectionSetupTimeout__)
+        self.ioService.startTimer("rrcConnectionSetupTimeoutT300", self.rrcConnectionSetupTimeoutT300,
+            self.__onRrcConnectionSetupTimeout__)
+        self.ioService.startTimer("macContentionResolutionTimeout", self.macContentionResolutionTimeout,
+            self.__onContentionResolutionTimeout__)
     
-    def __onRccConnectionSetupTimeout__(self, _):
+    def __onRrcConnectionSetupTimeout__(self, _):
         self.__notifyProcedureCompletion__(self.ErrorNoRrcConnectionSetup)
+
+    def __onContentionResolutionTimeout__(self, _):
+        self.__notifyProcedureCompletion__(self.ErrorNoContentionResolutionIdentity)
     
     def __sendRrcConnectionSetupComplete__(self):
         interface, channelInfo, message = rrcConnectionSetupComplete(5656, "2323", self.initialNasMessage)
