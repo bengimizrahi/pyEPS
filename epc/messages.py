@@ -13,7 +13,7 @@ randomAccessRequest = lambda raRnti, rapid: (
 ) 
 
 rrcConnectionRequest = \
-    lambda cRnti, randomValue, establishmentCause: (
+    lambda cRnti, ueIdentityType, ueIdentityValue, establishmentCause: (
         "uu",
         {
          "physicalChannel" :"pusch",    
@@ -26,7 +26,27 @@ rrcConnectionRequest = \
         {
          "messageName": "rrcConnectionRequest",
          "ueIdentity" : {
-          "randomValue": randomValue
+          "type": ueIdentityType,
+          "randomValue": ueIdentityValue
+         },
+         "establishmentCause": establishmentCause # mo-signalling used for Attach
+        }
+)
+
+contentionResolutionIdentity = \
+    lambda cRnti, ueIdentityType, ueIdentityValue, establishmentCause: (
+        "uu",
+        {
+         "physicalChannel" :"pdsch",    
+         "transportChannel": "dl-sch",  
+         "logicalChannel": "none",
+         "C-RNTI": cRnti  # the PDCCH CRC bits are scrambled by the temporary CRNTI 
+        },
+        {
+         "messageName": "contentionResolutionIdentity",  # this is a mirror of the L3 message sent by the UE
+         "ueIdentity" : {
+          "type": ueIdentityType,
+          "randomValue": ueIdentityValue
          },
          "establishmentCause": establishmentCause # mo-signalling used for Attach
         }

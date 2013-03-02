@@ -11,7 +11,7 @@ class Test_1_RrcConnectionProcedure(unittest.TestCase):
         self.ueIoService = IoService("ue", 9001)
         [s.start() for s in self.enbIoService, self.ueIoService]
         self.procedure = RrcConnectionEstablishmentProcedure(
-            {"nasMessageType": "attachRequest"}, 5, 0.7, (localhost(), 9000),
+            {"nasMessageType": "attachRequest"}, 5, 0.7, 0.5, 2.0, (localhost(), 9000),
             self.ueIoService, self.__procedureCompleteCallback__)
     
     def tearDown(self):
@@ -27,31 +27,46 @@ class Test_1_RrcConnectionProcedure(unittest.TestCase):
         self.assertEqual(self.result,
             RrcConnectionEstablishmentProcedure.ErrorNoRandomAccessResponse)
 
-    def test_2_noRrcConnectionSetupReceived(self):
+    def test_2_noContentionResolutionIdentityReceived(self):
         self.result = None
         self.procedure.execute()
         time.sleep(0.4) # smaller than 0.7
         self.enbIoService.sendMessage("ue", None, None, {"messageName": "randomAccessResponse"})
-        time.sleep(1.5) # greater than 1.0
+        time.sleep(2.0) # greater than 0.5
+        self.assertEqual(self.result,
+            RrcConnectionEstablishmentProcedure.ErrorNoContentionResolutionIdentity)
+
+    def test_3_noRrcConnectionSetupReceived(self):
+        self.result = None
+        self.procedure.execute()
+        time.sleep(0.4) # smaller than 0.7
+        self.enbIoService.sendMessage("ue", None, None, {"messageName": "randomAccessResponse"})
+        time.sleep(0.2) # smaller than 0.5
+        self.enbIoService.sendMessage("ue", None, None, {"messageName": "contentionResolutionIdentity"})
+        time.sleep(2.5) # greater than 2.0
         self.assertEqual(self.result,
             RrcConnectionEstablishmentProcedure.ErrorNoRrcConnectionSetup)
-
-    def test_3_rrcConnectionEstablished(self):
+    
+    def test_4_rrcConnectionEstablished(self):
         self.result = None
         self.procedure.execute()
         time.sleep(0.4) # smaller than 0.7
         self.enbIoService.sendMessage("ue", None, None, {"messageName": "randomAccessResponse"})
-        time.sleep(0.5) # smaller than 1.0
+        time.sleep(0.2) # smaller than 0.5
+        self.enbIoService.sendMessage("ue", None, None, {"messageName": "contentionResolutionIdentity"})
+        time.sleep(0.5) # less than 2.0
         self.enbIoService.sendMessage("ue", None, None, {"messageName": "rrcConnectionSetup"})
-        time.sleep(0.3)
+        time.sleep(0.5)
         self.assertEqual(self.result, RrcConnectionEstablishmentProcedure.Success)
 
-    def test_4_rrcConnectionEstablishedButSubsequentSetupsIgnored(self):
+    def test_5_rrcConnectionEstablishedButSubsequentSetupsIgnored(self):
         self.result = None
         self.procedure.execute()
         time.sleep(0.4) # smaller than 0.7
         self.enbIoService.sendMessage("ue", None, None, {"messageName": "randomAccessResponse"})
-        time.sleep(0.5) # smaller than 1.0
+        time.sleep(0.2) # smaller than 0.5
+        self.enbIoService.sendMessage("ue", None, None, {"messageName": "contentionResolutionIdentity"})
+        time.sleep(0.5) # smaller than 2.0
         self.enbIoService.sendMessage("ue", None, None, {"messageName": "rrcConnectionSetup"})
         time.sleep(0.3)
         self.assertEqual(self.result, RrcConnectionEstablishmentProcedure.Success)
