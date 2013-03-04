@@ -1,4 +1,4 @@
-from ...messages import randomAccessRequest, rrcConnectionRequest, rrcConnectionSetupComplete
+from ...messages.rrc import randomAccessRequest, rrcConnectionRequest, rrcConnectionSetupComplete
 
 class RrcConnectionEstablishmentProcedure(object):
     
