@@ -10,7 +10,7 @@ class S1SetupProcedure(object):
         self.mmeAddress = mmeAddress
         self.ioService = ioService
         self.procedureProgressCallback = procedureProgressCallback
-        self.nextAttemptTimerRunning = False
+        self.waitForNextAttemptTimer = None
 
     def execute(self):
         requiredParameters = ("globalEnbId", "enbName", "supportedTas", "csgIdList", "defaultPagingDrx")
@@ -21,15 +21,15 @@ class S1SetupProcedure(object):
         self.__sendS1SetupRequest__()
 
     def terminate(self):
-        if self.nextAttemptTimerRunning:
-            self.ioService.cancelTimer("waitForNextAttempt")
+        if self.waitForNextAttemptTimer:
+            self.waitForNextAttemptTimer.cancel()
         self.ioService.removeIncomingMessageCallback(self.__incomingMessageCallback__)
 
     def __sendS1SetupRequest__(self):
         self.ioService.sendMessage(self.mmeAddress, *s1SetupRequest(**self.s1SetupRequestParameters))
 
-    def __resendS1SetupRequest__(self, _=None):
-        self.nextAttemptTimerRunning = False
+    def __resendS1SetupRequest__(self):
+        self.waitForNextAttemptTimer = None
         self.__sendS1SetupRequest__()
 
     def __incomingMessageCallback__(self, source, interface, channelInfo, message):
@@ -52,8 +52,8 @@ class S1SetupProcedure(object):
             "Don't know how to handle CriticalityDiagnostics IE in an S1 Setup Failure"
         timeToWait = s1SetupFailure["timeToWait"]
         if timeToWait:
-            self.ioService.startTimer("waitForNextAttempt", timeToWait, self.__resendS1SetupRequest__)
-            self.nextAttemptTimerRunning = True
+            self.waitForNextAttemptTimer = self.ioService.createTimer(timeToWait, self.__resendS1SetupRequest__)
+            self.waitForNextAttemptTimer.start()
             self.procedureProgressCallback(self.ProgressWaitForNextAttempt)
             return
         progress = (s1SetupFailure["cause"] == "unknownPlmn" and self.ProgressFailedWithCauseUnknownPlmn or
