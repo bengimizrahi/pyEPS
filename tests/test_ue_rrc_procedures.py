@@ -4,7 +4,7 @@ import time
 from epc.utils.io import IoService, localhost
 from epc.procedures.ue.rrc import RrcConnectionEstablishmentProcedure
 
-class Test_1_RrcConnectionProcedure(unittest.TestCase):
+class TestRrcConnectionProcedure(unittest.TestCase):
 
     def setUp(self):
         self.enbIoService = IoService("enb", 9000)
@@ -28,7 +28,7 @@ class Test_1_RrcConnectionProcedure(unittest.TestCase):
     def __procedureCompleteCallback__(self, result):
         self.result = result
     
-    def test_1_noRandomAccessResponseReceived(self):
+    def test_noRandomAccessResponseReceived(self):
         self.result = None
         self.procedure.execute()
         time.sleep(3.7)
@@ -36,7 +36,7 @@ class Test_1_RrcConnectionProcedure(unittest.TestCase):
             RrcConnectionEstablishmentProcedure.ErrorNoRandomAccessResponse)
         self.procedure.terminate()
 
-    def test_2_noContentionResolutionIdentityReceived(self):
+    def test_noContentionResolutionIdentityReceived(self):
         self.result = None
         self.procedure.execute()
         time.sleep(0.4) # smaller than 0.7
@@ -46,7 +46,7 @@ class Test_1_RrcConnectionProcedure(unittest.TestCase):
             RrcConnectionEstablishmentProcedure.ErrorNoContentionResolutionIdentity)
         self.procedure.terminate()
 
-    def test_3_noRrcConnectionSetupReceived(self):
+    def test_noRrcConnectionSetupReceived(self):
         self.result = None
         self.procedure.execute()
         time.sleep(0.4) # smaller than 0.7
@@ -58,7 +58,7 @@ class Test_1_RrcConnectionProcedure(unittest.TestCase):
             RrcConnectionEstablishmentProcedure.ErrorNoRrcConnectionSetup)
         self.procedure.terminate()
     
-    def test_4_rrcConnectionEstablished(self):
+    def test_rrcConnectionEstablished(self):
         self.result = None
         self.procedure.execute()
         time.sleep(0.4) # smaller than 0.7
@@ -71,7 +71,7 @@ class Test_1_RrcConnectionProcedure(unittest.TestCase):
         self.assertEqual(self.result, RrcConnectionEstablishmentProcedure.Success)
         self.procedure.terminate()
 
-    def test_5_rrcConnectionEstablishedButSubsequentSetupsIgnored(self):
+    def test_rrcConnectionEstablishedButSubsequentSetupsIgnored(self):
         self.result = None
         self.procedure.execute()
         time.sleep(0.4) # smaller than 0.7

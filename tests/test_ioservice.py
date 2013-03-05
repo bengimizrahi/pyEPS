@@ -4,32 +4,32 @@ import time
 from epc.utils.io import IoService, localhost
 
 
-class Test_1_IoServiceAssertions(unittest.TestCase):
+class TestIoServiceAssertions(unittest.TestCase):
     
     def setUp(self):
         self.ioservice = IoService("service", 9000)
     
-    def test_2_funcStop(self):
+    def test_funcStop(self):
         with self.assertRaises(RuntimeError):
             self.ioservice.stop()
     
-    def test_3_funcStartTimer(self):
+    def test_funcStartTimer(self):
         with self.assertRaises(RuntimeError):
             foo = self.ioservice.createTimer(1.0, lambda: None)
             foo.start()
     
-    def test_5_funcSendMessage(self):
+    def test_funcSendMessage(self):
         with self.assertRaises(RuntimeError):
             self.ioservice.sendMessage((localhost(), 9000), "interface", "channelInfo", {"key": "value"})
 
 
-class Test_2_IoServiceTimers(unittest.TestCase):
+class TestIoServiceTimers(unittest.TestCase):
     
     def setUp(self):
         self.ioservice = IoService("timer", 9000)
         self.ioservice.start()
 
-    def test_0_startTimer(self):
+    def test_startTimer(self):
         def onSuccess():
             self.successful = True
         self.successful = False
@@ -38,7 +38,7 @@ class Test_2_IoServiceTimers(unittest.TestCase):
         time.sleep(0.2)
         self.assertTrue(self.successful)
         
-    def test_1_startTimerWithArguments(self):
+    def test_startTimerWithArguments(self):
         def onSuccess(*args, **kwargs):
             self.assertEqual(args, (1, 2, 3))
             self.assertEqual(kwargs, {"kwargOne": 4, "kwargTwo": 5, "kwargThree": 6})
@@ -49,7 +49,7 @@ class Test_2_IoServiceTimers(unittest.TestCase):
         time.sleep(0.2)
         self.assertTrue(self.successful)
     
-    def test_2_cancelTimer(self):
+    def test_cancelTimer(self):
         def onExpiration():
             self.expired = True
         self.expired = False
@@ -60,7 +60,7 @@ class Test_2_IoServiceTimers(unittest.TestCase):
         time.sleep(0.2)
         self.assertFalse(self.expired)
 
-    def test_3_restartTimer(self):
+    def test_restartTimer(self):
         def onExpiration():
             self.count += 1
             if self.count < 2:
@@ -72,7 +72,7 @@ class Test_2_IoServiceTimers(unittest.TestCase):
         time.sleep(0.2)
         self.assertEqual(self.count, 2)
 
-    def test_5_restartCanceledTimer(self):
+    def test_restartCanceledTimer(self):
         def onExpiration():
             self.successful = True
         foo = self.ioservice.createTimer(0.1, onExpiration)
@@ -88,12 +88,12 @@ class Test_2_IoServiceTimers(unittest.TestCase):
         self.ioservice.stop()
 
 
-class Test_3_IoService(unittest.TestCase):
+class TestIoService(unittest.TestCase):
 
     def setUp(self):
         self.ioservices = [IoService(str(i), 9000 + i) for i in range(2)] 
 
-    def test_1_basicMessaging(self):
+    def test_basicMessaging(self):
         msg0to1 = {
             "content": "Anyone there?",
         }
@@ -114,7 +114,7 @@ class Test_3_IoService(unittest.TestCase):
         time.sleep(0.1)
         self.assertTrue(self.successful)
     
-    def test_2_broadcastMessaging(self):
+    def test_broadcastMessaging(self):
         msgToAll = {
             "content": "Heeeelp!",
         }
@@ -128,7 +128,7 @@ class Test_3_IoService(unittest.TestCase):
         time.sleep(0.1)
         self.assertTrue(self.successful)
     
-    def test_3_paging(self):
+    def test_paging(self):
         msgToAll = {
             "type": "paging-request",
             "id": "1",
@@ -144,7 +144,7 @@ class Test_3_IoService(unittest.TestCase):
         time.sleep(0.1)
         self.assertTrue(self.successful)
     
-    def test_4_noPeerFound(self):
+    def test_noPeerFound(self):
         with self.assertRaises(Exception):
             [s.start() for s in self.ioservices]
             self.ioservices[0].sendMessage(("1", "interface", "channelInfo", {"key": "value"}))
