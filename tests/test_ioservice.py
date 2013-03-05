@@ -15,18 +15,12 @@ class Test_1_IoServiceAssertions(unittest.TestCase):
     
     def test_3_funcStartTimer(self):
         with self.assertRaises(RuntimeError):
-            self.ioservice.startTimer("foo", 1.0, lambda: None)
-    
-    def test_4_funcCancelTimer(self):
-        with self.assertRaises(RuntimeError):
-            self.ioservice.cancelTimer("foo")
+            foo = self.ioservice.createTimer(1.0, lambda: None)
+            foo.start()
     
     def test_5_funcSendMessage(self):
         with self.assertRaises(RuntimeError):
             self.ioservice.sendMessage((localhost(), 9000), "interface", "channelInfo", {"key": "value"})
-
-    def tearDown(self):
-        pass
 
 
 class Test_2_IoServiceTimers(unittest.TestCase):
