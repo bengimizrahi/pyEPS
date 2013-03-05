@@ -41,7 +41,7 @@ class RrcConnectionEstablishmentProcedure(object):
             self.waitForRandomAccessResponseTimer.cancel()
             self.__sendRrcConnectionRequest__()
         if message["messageName"] == "contentionResolutionIdentity":
-            # assume RRC Connection Setup is processed successfully
+            # assume MAC Contention Resolution Identity is processed successfully
             self.waitForMacContentionResolutionTimer.cancel()
         if message["messageName"] == "rrcConnectionSetup":
             # assume RRC Connection Setup is processed successfully
