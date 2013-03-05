@@ -3,7 +3,7 @@ import time
 
 from epc.utils.io import IoService, localhost
 from epc.procedures.enb.s1ap import S1SetupProcedure
-from epc.messages.s1ap import s1SetupRequest, s1SetupResponse, s1SetupFailure
+from epc.messages.s1ap import s1SetupResponse, s1SetupFailure
 
 class TestS1apSetupProcedureInitiation(unittest.TestCase):
 
