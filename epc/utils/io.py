@@ -44,27 +44,13 @@ class IoService(object):
         self.eventQueue.put(("STOP", None))
         [t.join() for t in (self.ioHandlerThread, self.callbackHandlerThread)]
     
-    def startTimer(self, name, duration, callback):
+    def createTimer(self, duration, callback, *args, **kwargs):
         if not self.alive:
             raise RuntimeError("Thread not started")
-        if self.timers.get(name):
-            raise Exception("A running timer present for '{}'".format(name))
-        timerContext = (threading.Timer(duration, self.__onTimerExpiration__, args=[name]), callback)
-        timerContext[0].start()
-        self.timers[name] = timerContext
+        return threading.Timer(duration, self.__onTimerExpiration__, args=[callback, args, kwargs])
     
-    def cancelTimer(self, name):
-        if not self.alive:
-            raise RuntimeError("Thread not started")
-        if not self.timers.get(name):
-            raise Exception("No running timer named '{}' found".format(name))
-        self.timers[name][0].cancel()
-        del self.timers[name]
-    
-    def __onTimerExpiration__(self, name):
-        timerContext = self.timers[name]
-        self.eventQueue.put(("TIMEOUT", (name, timerContext[1])))
-        del self.timers[name]
+    def __onTimerExpiration__(self, callback, args, kwargs):
+        self.eventQueue.put(("TIMEOUT", (callback, args, kwargs)))
     
     def sendMessage(self, destination, interface, channelInfo, message):
         if not self.alive:
@@ -121,9 +107,7 @@ class IoService(object):
             elif event == "PACKET":
                 packet = param
                 for cb in self.incomingMessageCallback:
-                    cb(packet["source"], packet["interface"], packet["channelInfo"],
-                        packet["message"])
+                    cb(packet["source"], packet["interface"], packet["channelInfo"], packet["message"])
             elif event == "TIMEOUT":
-                name, timerExpirationCallback = param
-                timerExpirationCallback(name)
-        [t.cancel() for t, _ in self.timers.values()]
+                timerExpirationCallback, args, kwargs = param
+                timerExpirationCallback(*args, **kwargs)
