@@ -48,8 +48,7 @@ class RrcConnectionEstablishmentProcedure(object):
         
     def __sendPrachPreamble__(self):
         self.attemptNo += 1
-        interface, channelInfo, message = randomAccessRequest(1, 12)
-        self.ioService.sendMessage(self.enbAddress, interface, channelInfo, message)
+        self.ioService.sendMessage(self.enbAddress, *randomAccessRequest(1, 12))
         self.waitForRandomAccessResponseTimer = self.ioService.createTimer(
             self.procedureParameters["prachPreambleRepeatDelay"], self.__onRandomAccessResponseTimeout__)
         self.waitForRandomAccessResponseTimer.start()
@@ -61,8 +60,7 @@ class RrcConnectionEstablishmentProcedure(object):
             self.__notifyProcedureCompletion__(self.ErrorNoRandomAccessResponse)
 
     def __sendRrcConnectionRequest__(self):
-        interface, channelInfo, message = rrcConnectionRequest(34343, "randomValue", 9989982, "moSignalling")
-        self.ioService.sendMessage(self.enbAddress, interface, channelInfo, message)
+        self.ioService.sendMessage(self.enbAddress, *rrcConnectionRequest(34343, "randomValue", 9989982, "moSignalling"))
         self.waitForRrcConnectionSetupTimerT300 = self.ioService.createTimer(
             self.procedureParameters["rrcConnectionSetupTimeoutT300"], self.__onRrcConnectionSetupTimeout__)
         self.waitForRrcConnectionSetupTimerT300.start()
@@ -77,5 +75,5 @@ class RrcConnectionEstablishmentProcedure(object):
         self.__notifyProcedureCompletion__(self.ErrorNoContentionResolutionIdentity)
     
     def __sendRrcConnectionSetupComplete__(self):
-        interface, channelInfo, message = rrcConnectionSetupComplete(5656, "2323", self.initialNasMessage)
-        self.ioService.sendMessage(self.enbAddress, interface, channelInfo, message)
+        self.ioService.sendMessage(self.enbAddress,
+            *rrcConnectionSetupComplete(5656, "2323", self.procedureParameters["initialNasMessage"]))
