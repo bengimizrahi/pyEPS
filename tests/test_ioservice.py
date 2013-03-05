@@ -69,13 +69,6 @@ class Test_2_IoServiceTimers(unittest.TestCase):
         time.sleep(0.2)
         self.assertEqual(self.count, 2)
 
-    def test_4_restartOngoingTimer(self):
-        def onExpiration(name):
-            pass
-        self.ioservice.startTimer("foo", 0.1, onExpiration)
-        with self.assertRaises(Exception):
-            self.ioservice.startTimer("foo", 0.1, onExpiration)
-
     def test_5_restartCanceledTimer(self):
         def onExpiration(name):
             self.successful = True
