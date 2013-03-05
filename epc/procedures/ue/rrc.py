@@ -54,7 +54,7 @@ class RrcConnectionEstablishmentProcedure(object):
             self.procedureParameters["prachPreambleRepeatDelay"], self.__onRandomAccessResponseTimeout__)
         self.waitForRandomAccessResponseTimer.start()
 
-    def __onRandomAccessResponseTimeout__(self, _):
+    def __onRandomAccessResponseTimeout__(self):
         if self.attemptNo < self.procedureParameters["maxPrachPreambleAttempts"]:
             self.__sendPrachPreamble__()
         else:
@@ -70,10 +70,10 @@ class RrcConnectionEstablishmentProcedure(object):
             self.procedureParameters["macContentionResolutionTimeout"], self.__onContentionResolutionTimeout__)
         self.waitForMacContentionResolutionTimer.start()
     
-    def __onRrcConnectionSetupTimeout__(self, _):
+    def __onRrcConnectionSetupTimeout__(self):
         self.__notifyProcedureCompletion__(self.ErrorNoRrcConnectionSetup)
 
-    def __onContentionResolutionTimeout__(self, _):
+    def __onContentionResolutionTimeout__(self):
         self.__notifyProcedureCompletion__(self.ErrorNoContentionResolutionIdentity)
     
     def __sendRrcConnectionSetupComplete__(self):
