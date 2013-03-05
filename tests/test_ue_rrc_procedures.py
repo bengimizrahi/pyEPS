@@ -26,6 +26,7 @@ class Test_1_RrcConnectionProcedure(unittest.TestCase):
         time.sleep(3.7)
         self.assertEqual(self.result,
             RrcConnectionEstablishmentProcedure.ErrorNoRandomAccessResponse)
+        self.procedure.terminate()
 
     def test_2_noContentionResolutionIdentityReceived(self):
         self.result = None
@@ -35,6 +36,7 @@ class Test_1_RrcConnectionProcedure(unittest.TestCase):
         time.sleep(2.0) # greater than 0.5
         self.assertEqual(self.result,
             RrcConnectionEstablishmentProcedure.ErrorNoContentionResolutionIdentity)
+        self.procedure.terminate()
 
     def test_3_noRrcConnectionSetupReceived(self):
         self.result = None
@@ -46,6 +48,7 @@ class Test_1_RrcConnectionProcedure(unittest.TestCase):
         time.sleep(2.5) # greater than 2.0
         self.assertEqual(self.result,
             RrcConnectionEstablishmentProcedure.ErrorNoRrcConnectionSetup)
+        self.procedure.terminate()
     
     def test_4_rrcConnectionEstablished(self):
         self.result = None
@@ -58,6 +61,7 @@ class Test_1_RrcConnectionProcedure(unittest.TestCase):
         self.enbIoService.sendMessage("ue", None, None, {"messageName": "rrcConnectionSetup"})
         time.sleep(0.5)
         self.assertEqual(self.result, RrcConnectionEstablishmentProcedure.Success)
+        self.procedure.terminate()
 
     def test_5_rrcConnectionEstablishedButSubsequentSetupsIgnored(self):
         self.result = None
@@ -74,6 +78,7 @@ class Test_1_RrcConnectionProcedure(unittest.TestCase):
         self.enbIoService.sendMessage("ue", None, None, {"messageName": "rrcConnectionSetup"})
         time.sleep(0.2)
         self.assertEqual(self.result, None)
+        self.procedure.terminate()
 
 if __name__ == "__main__":
     unittest.main()
