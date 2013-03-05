@@ -50,32 +50,37 @@ class Test_2_IoServiceTimers(unittest.TestCase):
         self.assertTrue(self.successful)
     
     def test_2_cancelTimer(self):
-        def onExpiration(name):
+        def onExpiration():
             self.expired = True
         self.expired = False
-        self.ioservice.startTimer("foo", 0.2, onExpiration)
+        foo = self.ioservice.createTimer(0.2, onExpiration)
+        foo.start()
         time.sleep(0.1)
-        self.ioservice.cancelTimer("foo")
+        foo.cancel()
         time.sleep(0.2)
         self.assertFalse(self.expired)
 
     def test_3_restartTimer(self):
-        def onExpiration(name):
+        def onExpiration():
             self.count += 1
             if self.count < 2:
-                self.ioservice.startTimer("foo", 0.05, onExpiration)
+                foo = self.ioservice.createTimer(0.05, onExpiration)
+                foo.start()
         self.count = 0
-        self.ioservice.startTimer("foo", 0.05, onExpiration)
+        foo = self.ioservice.createTimer(0.05, onExpiration)
+        foo.start()
         time.sleep(0.2)
         self.assertEqual(self.count, 2)
 
     def test_5_restartCanceledTimer(self):
-        def onExpiration(name):
+        def onExpiration():
             self.successful = True
-        self.ioservice.startTimer("foo", 0.1, onExpiration)
+        foo = self.ioservice.createTimer(0.1, onExpiration)
+        foo.start()
         time.sleep(0.05)
-        self.ioservice.cancelTimer("foo")
-        self.ioservice.startTimer("foo", 0.1, onExpiration)
+        foo.cancel()
+        foo = self.ioservice.createTimer(0.1, onExpiration)
+        foo.start()
         time.sleep(0.2)
         self.assertTrue(self.successful)
 
