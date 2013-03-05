@@ -28,13 +28,24 @@ class Test_2_IoServiceTimers(unittest.TestCase):
     def setUp(self):
         self.ioservice = IoService("timer", 9000)
         self.ioservice.start()
-        
-    def test_1_startTimer(self):
-        def onSuccess(name):
-            self.assertEqual(name, "foo")
+
+    def test_0_startTimer(self):
+        def onSuccess():
             self.successful = True
         self.successful = False
-        self.ioservice.startTimer("foo", 0.1, onSuccess)
+        foo = self.ioservice.createTimer(0.1, onSuccess)
+        foo.start()
+        time.sleep(0.2)
+        self.assertTrue(self.successful)
+        
+    def test_1_startTimerWithArguments(self):
+        def onSuccess(*args, **kwargs):
+            self.assertEqual(args, (1, 2, 3))
+            self.assertEqual(kwargs, {"kwargOne": 4, "kwargTwo": 5, "kwargThree": 6})
+            self.successful = True
+        self.successful = False
+        foo = self.ioservice.createTimer(0.1, onSuccess, 1, 2, 3, kwargOne=4, kwargTwo=5, kwargThree=6)
+        foo.start()
         time.sleep(0.2)
         self.assertTrue(self.successful)
     
