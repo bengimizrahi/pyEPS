@@ -4,14 +4,8 @@ class RrcConnectionEstablishmentProcedure(object):
     
     Success, ErrorNoRandomAccessResponse, ErrorNoContentionResolutionIdentity, ErrorNoRrcConnectionSetup = range(4)
     
-    def __init__(self, initialNasMessage, maxPrachPreambleAttempts, prachPreambleRepeatDelay, 
-                 macContentionResolutionTimeout, rrcConnectionSetupTimeoutT300, enbAddress, ioService,
-                 procedureCompleteCallback):
-        self.initialNasMessage = initialNasMessage
-        self.maxPrachPreambleAttempts = maxPrachPreambleAttempts # Defined as PREAMBLE_TRANS_MAX in 3GPP, this is actually read from SIB2
-        self.prachPreambleRepeatDelay = prachPreambleRepeatDelay
-        self.macContentionResolutionTimeout = macContentionResolutionTimeout
-        self.rrcConnectionSetupTimeoutT300 = rrcConnectionSetupTimeoutT300
+    def __init__(self, procedureParameters, enbAddress, ioService, procedureCompleteCallback):
+        self.procedureParameters = procedureParameters
         self.enbAddress = enbAddress
         self.ioService = ioService
         self.procedureCompleteCallback = procedureCompleteCallback
@@ -22,6 +16,11 @@ class RrcConnectionEstablishmentProcedure(object):
         self.waitForMacContentionResolutionTimer = None
 
     def execute(self):
+        requiredParameters = ("initialNasMessage", "maxPrachPreambleAttempts", "prachPreambleRepeatDelay",
+            "macContentionResolutionTimeout", "rrcConnectionSetupTimeoutT300")
+        missingParameters = filter(lambda p: p not in self.procedureParameters, requiredParameters)
+        if missingParameters:
+            raise Exception("Missing RRC Connection Setup Procedure parameters: {}".format(missingParameters))
         self.ioService.addIncomingMessageCallback(self.__incomingMessageCallback__)
         self.__sendPrachPreamble__()
 
@@ -56,7 +55,7 @@ class RrcConnectionEstablishmentProcedure(object):
         self.waitForRandomAccessResponseTimer.start()
 
     def __onRandomAccessResponseTimeout__(self, _):
-        if self.attemptNo < self.maxPrachPreambleAttempts:
+        if self.attemptNo < self.procedureParameters["maxPrachPreambleAttempts"]:
             self.__sendPrachPreamble__()
         else:
             self.__notifyProcedureCompletion__(self.ErrorNoRandomAccessResponse)
