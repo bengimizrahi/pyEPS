@@ -12,6 +12,23 @@ randomAccessRequest = lambda raRnti, rapid: (
     }
 ) 
 
+randomAccessResponse = \
+    lambda raRnti, rapid, temporaryCrnti, uplinkGrant: (
+        "uu",
+        {
+         "physicalChannel" :"pdcch/pdsch",   #RA-RNTI is in the PDCCH. 
+         "transportChannel": "dl-sch",  # RAPID and UL Grant and Temp-CRNTI are in PDSCH
+         "logicalChannel": "None",
+         "raRnti" : raRnti   # the crc bits of pdcch are scrambled by raRnti
+         },
+         {
+          "messageName": "randomAccessResponse",
+          "rapid": rapid,  # number between 1 and 64
+          "uplinkGrant": uplinkGrant,
+          "temporaryCrnti": temporaryCrnti
+         } 
+) 
+
 rrcConnectionRequest = \
     lambda cRnti, ueIdentityType, ueIdentityValue, establishmentCause: (
         "uu",
@@ -19,7 +36,7 @@ rrcConnectionRequest = \
          "physicalChannel" :"pusch",    
          "transportChannel": "ul-sch",  
          "logicalChannel": "ccch",
-         "C-RNTI": cRnti #When using CCCH (RRC Establishment), the C-RNTI is used as input
+         "cRnti": cRnti #When using CCCH (RRC Establishment), the C-RNTI is used as input
 # when scrambling the PUSCH prior to modulation. When using DCCH (RRC Connection
 # re-establishment, the C-RNTI is included as part of the MAC header. 
         },
@@ -27,7 +44,7 @@ rrcConnectionRequest = \
          "messageName": "rrcConnectionRequest",
          "ueIdentity" : {
           "type": ueIdentityType,
-          "randomValue": ueIdentityValue
+          "value": ueIdentityValue
          },
          "establishmentCause": establishmentCause # mo-signalling used for Attach
         }
@@ -51,6 +68,23 @@ contentionResolutionIdentity = \
          "establishmentCause": establishmentCause # mo-signalling used for Attach
         }
 )
+
+rrcConnectionSetup =  \
+    lambda cRnti, rrcTransactionIdentifier : (
+        "uu",
+        {
+         "physicalChannel" :"pusch",    
+         "transportChannel": "ul-sch",  
+         "logicalChannel": "ccch",
+         "puschScramblingInput": cRnti,  # The C-RNTI is sent in the PDCCH which also includes the RBs used to 
+                                                  # xmit the RRCConnection setup message
+         "lcid": "SRB0"   # The MAC header contains the Logical ID                                                
+         },
+         {
+          "MsgName": "RRCConnectionRequest",
+          "rrcTransactionIdentifier" : rrcTransactionIdentifier
+         } 
+) 
 
 rrcConnectionSetupComplete = \
     lambda rrcTransactionIdentifier, selectedPlmnIdentity, dedicatedInfoNas: (

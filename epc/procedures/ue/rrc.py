@@ -38,12 +38,12 @@ class RrcConnectionEstablishmentProcedure(object):
             self.ioService.cancelTimer("macContentionResolutionTimeout")
         if message["messageName"] == "rrcConnectionSetup":
             # assume RRC Connection Setup is processed successfully
-            self.ioService.cancelTimer("rrcConnectionSetupTimeoutT300")
             self.__sendRrcConnectionSetupComplete__()
             if not self.procedureCompleteCallbackExecuted:
+                self.ioService.cancelTimer("rrcConnectionSetupTimeoutT300")
                 self.__notifyProcedureCompletion__(self.Success)
                 self.procedureCompleteCallbackExecuted = True
-        
+    
     def __sendPrachPreamble__(self):
         self.attemptNo += 1
         interface, channelInfo, message = randomAccessRequest(1, 12)
