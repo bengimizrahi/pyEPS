@@ -10,8 +10,16 @@ class Test_1_RrcConnectionProcedure(unittest.TestCase):
         self.enbIoService = IoService("enb", 9000)
         self.ueIoService = IoService("ue", 9001)
         [s.start() for s in self.enbIoService, self.ueIoService]
-        self.procedure = RrcConnectionEstablishmentProcedure(
-            {"nasMessageType": "attachRequest"}, 5, 0.7, 0.5, 2.0, (localhost(), 9000),
+        procedureParameters = {
+            "initialNasMessage": {
+             "nasMessageType": "attachRequest"
+            },
+            "maxPrachPreambleAttempts": 5,
+            "prachPreambleRepeatDelay": 0.7,
+            "macContentionResolutionTimeout": 0.5,
+            "rrcConnectionSetupTimeoutT300": 2.0
+        }
+        self.procedure = RrcConnectionEstablishmentProcedure(procedureParameters, (localhost(), 9000),
             self.ueIoService, self.__procedureCompleteCallback__)
     
     def tearDown(self):

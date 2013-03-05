@@ -15,18 +15,12 @@ class Test_1_IoServiceAssertions(unittest.TestCase):
     
     def test_3_funcStartTimer(self):
         with self.assertRaises(RuntimeError):
-            self.ioservice.startTimer("foo", 1.0, lambda: None)
-    
-    def test_4_funcCancelTimer(self):
-        with self.assertRaises(RuntimeError):
-            self.ioservice.cancelTimer("foo")
+            foo = self.ioservice.createTimer(1.0, lambda: None)
+            foo.start()
     
     def test_5_funcSendMessage(self):
         with self.assertRaises(RuntimeError):
             self.ioservice.sendMessage((localhost(), 9000), "interface", "channelInfo", {"key": "value"})
-
-    def tearDown(self):
-        pass
 
 
 class Test_2_IoServiceTimers(unittest.TestCase):
@@ -34,50 +28,59 @@ class Test_2_IoServiceTimers(unittest.TestCase):
     def setUp(self):
         self.ioservice = IoService("timer", 9000)
         self.ioservice.start()
-        
-    def test_1_startTimer(self):
-        def onSuccess(name):
-            self.assertEqual(name, "foo")
+
+    def test_0_startTimer(self):
+        def onSuccess():
             self.successful = True
         self.successful = False
-        self.ioservice.startTimer("foo", 0.1, onSuccess)
+        foo = self.ioservice.createTimer(0.1, onSuccess)
+        foo.start()
+        time.sleep(0.2)
+        self.assertTrue(self.successful)
+        
+    def test_1_startTimerWithArguments(self):
+        def onSuccess(*args, **kwargs):
+            self.assertEqual(args, (1, 2, 3))
+            self.assertEqual(kwargs, {"kwargOne": 4, "kwargTwo": 5, "kwargThree": 6})
+            self.successful = True
+        self.successful = False
+        foo = self.ioservice.createTimer(0.1, onSuccess, 1, 2, 3, kwargOne=4, kwargTwo=5, kwargThree=6)
+        foo.start()
         time.sleep(0.2)
         self.assertTrue(self.successful)
     
     def test_2_cancelTimer(self):
-        def onExpiration(name):
+        def onExpiration():
             self.expired = True
         self.expired = False
-        self.ioservice.startTimer("foo", 0.2, onExpiration)
+        foo = self.ioservice.createTimer(0.2, onExpiration)
+        foo.start()
         time.sleep(0.1)
-        self.ioservice.cancelTimer("foo")
+        foo.cancel()
         time.sleep(0.2)
         self.assertFalse(self.expired)
 
     def test_3_restartTimer(self):
-        def onExpiration(name):
+        def onExpiration():
             self.count += 1
             if self.count < 2:
-                self.ioservice.startTimer("foo", 0.05, onExpiration)
+                foo = self.ioservice.createTimer(0.05, onExpiration)
+                foo.start()
         self.count = 0
-        self.ioservice.startTimer("foo", 0.05, onExpiration)
+        foo = self.ioservice.createTimer(0.05, onExpiration)
+        foo.start()
         time.sleep(0.2)
         self.assertEqual(self.count, 2)
 
-    def test_4_restartOngoingTimer(self):
-        def onExpiration(name):
-            pass
-        self.ioservice.startTimer("foo", 0.1, onExpiration)
-        with self.assertRaises(Exception):
-            self.ioservice.startTimer("foo", 0.1, onExpiration)
-
     def test_5_restartCanceledTimer(self):
-        def onExpiration(name):
+        def onExpiration():
             self.successful = True
-        self.ioservice.startTimer("foo", 0.1, onExpiration)
+        foo = self.ioservice.createTimer(0.1, onExpiration)
+        foo.start()
         time.sleep(0.05)
-        self.ioservice.cancelTimer("foo")
-        self.ioservice.startTimer("foo", 0.1, onExpiration)
+        foo.cancel()
+        foo = self.ioservice.createTimer(0.1, onExpiration)
+        foo.start()
         time.sleep(0.2)
         self.assertTrue(self.successful)
 
