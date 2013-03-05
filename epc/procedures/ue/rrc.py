@@ -30,6 +30,11 @@ class RrcConnectionEstablishmentProcedure(object):
     def __notifyProcedureCompletion__(self, result):
         self.procedureCompleteCallback(result)
 
+    def __cancelAllTimers__(self):
+        for t in (self.waitForRandomAccessResponseTimer,
+                self.waitForRrcConnectionSetupTimerT300, self.waitForMacContentionResolutionTimer):
+            if t: t.cancel()
+
     def __incomingMessageCallback__(self, source, interface, channelInfo, message):
         if message["messageName"] == "randomAccessResponse":
             # assume Random Access Response is processed successfully
@@ -69,9 +74,11 @@ class RrcConnectionEstablishmentProcedure(object):
         self.waitForMacContentionResolutionTimer.start()
     
     def __onRrcConnectionSetupTimeout__(self):
+        self.__cancelAllTimers__()
         self.__notifyProcedureCompletion__(self.ErrorNoRrcConnectionSetup)
 
     def __onContentionResolutionTimeout__(self):
+        self.__cancelAllTimers__()
         self.__notifyProcedureCompletion__(self.ErrorNoContentionResolutionIdentity)
     
     def __sendRrcConnectionSetupComplete__(self):
