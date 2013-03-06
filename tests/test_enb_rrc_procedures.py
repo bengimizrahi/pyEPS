@@ -124,36 +124,37 @@ class Test_2_EnbMainProcedure(unittest.TestCase):
         print "UE context information in eNB"
         print self.enbProcedure.ueContext
         
-#class Test_2_Ue2EnbRrrcEstablishment(unittest.TestCase):
-#
-#    def setUp(self):
-#        self.enbIoService = IoService("enb", 9000)
-#        self.ueIoServices = [IoService(str(i), 9001 + i) for i in range(2)]
-#        self.enbIoService.start()
-#        [s.start() for s in self.ueIoServices]
-#        self.enbProcedure = EnbMain(self.enbIoService)
-#        self.ueprocedure = RrcConnectionEstablishmentProcedure(
-#            {"nasMessageType": "attachRequest"}, 5, 0.7, 0.5, 2.0, (localhost(), 9000),
-#            self.ueIoService, self.__procedureCompleteCallback__)
-#     
-#    def tearDown(self):
-#        [s.stop() for s in self.ueIoServices]
-#        self.enbIoService.stop()
-#         
-#    def test1_singleUeRrcEstablishmentSuccess(self):
-#        temporaryCrnti = 0
-#        rrcTransactionIdentifier = 0
-#        self.enbProcedure.execute()
-#        interface, channelInfo, message = rrcConnectionRequest(temporaryCrnti, "randomValue", 3434, "moSignaling")
-#        self.ueIoServices[0].sendMessage((localhost(),9000), interface, channelInfo, message)
-#        interface, channelInfo, message = rrcConnectionSetupComplete(rrcTransactionIdentifier, 28001, 
-#                                                                     {"nasMessageType": "attachRequest"})
-#        self.ueIoServices[0].sendMessage((localhost(),9000), interface, channelInfo, message)
-#        time.sleep(1.0) # ensure the enb call back is not waiting for rrc complete
-#        self.assertEqual(self.enbProcedure.rrcEstablishmentSuccess[temporaryCrnti], EnbRrcConnectionEstablishmentProcedure.Success)        
-#        print "UE context information in eNB"
-#        print self.enbProcedure.ueContext       
-#        
+class Test_2_Ue2EnbRrrcEstablishment(unittest.TestCase):
+
+    def setUp(self):
+        self.enbIoService = IoService("enb", 9000)
+        self.ueIoServices = [IoService(str(i), 9001 + i) for i in range(2)]
+        self.enbIoService.start()
+        [s.start() for s in self.ueIoServices]
+        self.enbProcedure = EnbMain(self.enbIoService)
+        self.ueProcedures = {}
+        for i in range(2):
+            self.ueProcedures[i] = RrcConnectionEstablishmentProcedure(
+                {"nasMessageType": "attachRequest"}, 5, 0.7, 0.5, 2.0, (localhost(), 9000),
+                self.ueIoServices[i], self.__procedureCompleteCallback__)
+     
+    def tearDown(self):
+        [s.stop() for s in self.ueIoServices]
+        self.enbIoService.stop()
+ 
+    def __procedureCompleteCallback__(self, result):
+        self.ueresult = result
+         
+    def test1_singleUeRrcEstablishmentSuccess(self):
+        self.ueresult = None
+        self.enbProcedure.execute()
+        self.ueProcedures[0].execute()
+        time.sleep(3)
+        self.assertEqual(self.enbProcedure.rrcEstablishmentSuccess[0], EnbRrcConnectionEstablishmentProcedure.Success)        
+        self.assertEqual(self.result, RrcConnectionEstablishmentProcedure.Success)
+        print "UE context information in eNB"
+        print self.enbProcedure.ueContext       
+        
 #    def test3_twoUeRrcEstablishmentSuccess(self):
 #        self.ueResult = None
 #        self.enbResult = None
