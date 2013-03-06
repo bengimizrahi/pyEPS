@@ -83,7 +83,6 @@ class Test_2_EnbMainProcedure(unittest.TestCase):
      
     def test1_noRRCConnectionSetupCompleteReceived(self):
         temporaryCrnti = 0
-        rrcTransactionIdentifier = 0
         self.enbProcedure.execute()
         interface, channelInfo, message = rrcConnectionRequest(temporaryCrnti, "randomValue", 3434, "moSignaling")
         self.ueIoServices[0].sendMessage((localhost(),9000), interface, channelInfo, message)
@@ -124,7 +123,7 @@ class Test_2_EnbMainProcedure(unittest.TestCase):
         print "UE context information in eNB"
         print self.enbProcedure.ueContext
         
-class Test_2_Ue2EnbRrrcEstablishment(unittest.TestCase):
+class Test_3_Ue2EnbRrrcEstablishment(unittest.TestCase):
 
     def setUp(self):
         self.enbIoService = IoService("enb", 9000)
@@ -136,7 +135,9 @@ class Test_2_Ue2EnbRrrcEstablishment(unittest.TestCase):
         for i in range(2):
             self.ueProcedures[i] = RrcConnectionEstablishmentProcedure(
                 {"nasMessageType": "attachRequest"}, 5, 0.7, 0.5, 2.0, (localhost(), 9000),
-                self.ueIoServices[i], self.__procedureCompleteCallback__)
+                self.ueIoServices[i], self.__procedureCompleteCallback__,
+                {"ueIdentityType": "randomValue", "ueIdentityValue": 3434*i,
+                 "rrcEstablishmentCause": "moSignaling", "selectedPlmnIdentity": 2801})
      
     def tearDown(self):
         [s.stop() for s in self.ueIoServices]
@@ -151,29 +152,23 @@ class Test_2_Ue2EnbRrrcEstablishment(unittest.TestCase):
         self.ueProcedures[0].execute()
         time.sleep(3)
         self.assertEqual(self.enbProcedure.rrcEstablishmentSuccess[0], EnbRrcConnectionEstablishmentProcedure.Success)        
-        self.assertEqual(self.result, RrcConnectionEstablishmentProcedure.Success)
+        self.assertEqual(self.ueresult, RrcConnectionEstablishmentProcedure.Success)
         print "UE context information in eNB"
         print self.enbProcedure.ueContext       
         
-#    def test3_twoUeRrcEstablishmentSuccess(self):
-#        self.ueResult = None
-#        self.enbResult = None
-#        self.enbProcedure.execute()
-#        for i in range(2):
-#            interface, channelInfo, message = rrcConnectionRequest(i, "randomValue", 3434, "moSignaling")
-#            self.ueIoServices[0].sendMessage((localhost(),9000), interface, channelInfo, message)
-#            time.sleep(0.5)
-#        time.sleep(0.2)
-#        for i in range(2):
-#            interface, channelInfo, message = rrcConnectionSetupComplete(i, 28001, 
-#                                                                     {"nasMessageType": "attachRequest"})
-#            self.ueIoServices[i].sendMessage((localhost(),9000), interface, channelInfo, message)
-#            time.sleep(0.2)
-#        time.sleep(1.0) # ensure the enb call back is not waiting for rrc complete
-#        self.assertEqual(self.enbProcedure.rrcEstablishmentSuccess[0], EnbRrcConnectionEstablishmentProcedure.Success)        
-#        self.assertEqual(self.enbProcedure.rrcEstablishmentSuccess[1], EnbRrcConnectionEstablishmentProcedure.Success)        
-#        print "UE context information in eNB"
-#        print self.enbProcedure.ueContext
+    def test2_twoUeRrcEstablishmentSuccess(self):
+        self.ueresult = None
+        self.enbProcedure.execute()
+        self.ueProcedures[0].execute()
+        time.sleep(0.6)  # MOTE: This test fails dues to timer error if sleep is less than this value
+        # Exception: No running timer named 'randomAccessResponseTimeout' found
+        self.ueProcedures[1].execute()
+        time.sleep(3)
+        self.assertEqual(self.enbProcedure.rrcEstablishmentSuccess[0], EnbRrcConnectionEstablishmentProcedure.Success)        
+        self.assertEqual(self.enbProcedure.rrcEstablishmentSuccess[1], EnbRrcConnectionEstablishmentProcedure.Success)        
+        self.assertEqual(self.ueresult, RrcConnectionEstablishmentProcedure.Success)
+        print "UE context information in eNB"
+        print self.enbProcedure.ueContext       
         
         
 if __name__ == "__main__":

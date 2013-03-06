@@ -95,8 +95,8 @@ class EnbRrcConnectionEstablishmentProcedure(object):
     def __notifyProcedureCompletion__(self, result):
         if result == self.Success:
             self.procedureCompleteCallback(result, self.ueCrnti, self.rrcTransactionIdentifier, 
-                {"cRnti": self.ueCrnti, "identityType": self.ueIdentityType, 
-                "indentityValue": self.ueIdentityValue, "establishmentCause": self.rrcEstablishmentCause, 
+                {"cRnti": self.ueCrnti, "ueIdentity": self.ueIdentity, 
+                 "rrcEstablishmentCause": self.rrcEstablishmentCause, 
                 "selectedPlmnIdentity": self.ueSelectedPlmnIdentity, "dedicatedInfoNas": self.uededicatedInfoNas})
         else:
             self.procedureCompleteCallback(result, self.ueCrnti, self.rrcTransactionIdentifier)
@@ -108,10 +108,9 @@ class EnbRrcConnectionEstablishmentProcedure(object):
             self.ueAddress = source
             self.procedureCompleteCallbackExecuted = False             
             self.ueCrnti = channelInfo["cRnti"]
-            self.ueIdentityType = message["ueIdentity"]["type"]
-            self.ueIdentityValue = message["ueIdentity"]["value"]
-            self.rrcEstablishmentCause = message["establishmentCause"]
-            self.__sendContentionResolutionIdentity__()
+            self.ueIdentity = message["ueIdentity"]
+            self.rrcEstablishmentCause = message["rrcEstablishmentCause"]
+            self.__sendContentionResolutionIdentity__(message)
             time.sleep(0.2) # some delay before sending the next message
             self.__sendRrcConnectionSetup__()
         if ( (message["messageName"] == "rrcConnectionSetupComplete") and \
@@ -123,9 +122,9 @@ class EnbRrcConnectionEstablishmentProcedure(object):
                 self.__notifyProcedureCompletion__(self.Success)
                 self.procedureCompleteCallbackExecuted = True
     
-    def __sendContentionResolutionIdentity__(self):
-        interface, channelInfo, message = contentionResolutionIdentity(self.ueCrnti, self.ueIdentityType,
-                                                    self.ueIdentityValue, self.rrcEstablishmentCause)
+    def __sendContentionResolutionIdentity__(self, messageRrcConnectionRequest):
+        messageRrcConnectionRequest["messageName"] = "contentionResolutionIdentity"
+        interface, channelInfo, message = contentionResolutionIdentity(self.ueCrnti, messageRrcConnectionRequest)
         self.ioService.sendMessage(self.ueAddress, interface, channelInfo, message)
     
     def __sendRrcConnectionSetup__(self):
