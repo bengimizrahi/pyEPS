@@ -12,18 +12,12 @@ class Test_1_EnbRrcConnectionProcedure(unittest.TestCase):
         self.enbIoService = IoService("enb", 9000)
         self.ueIoService = IoService("ue", 9001)
         [s.start() for s in self.enbIoService, self.ueIoService]
-        self.ueProcedure = RrcConnectionEstablishmentProcedure(
-            {"nasMessageType": "attachRequest"}, 5, 0.7, 0.5, 2.0, (localhost(), 9000),
-            self.ueIoService, self.__procedureUeCompleteCallback__)
         self.enbProcedure = EnbRrcConnectionEstablishmentProcedure(3, 0.5, self.enbIoService, 
             self.__procedureEnbCompleteCallback__)
     
     def tearDown(self):
         [s.stop() for s in self.enbIoService, self.ueIoService]
-
-    def __procedureUeCompleteCallback__(self, result):
-        self.ueResult = result
-    
+   
     def __procedureEnbCompleteCallback__(self, result, args=None):
         self.enbResult = result
   
@@ -33,10 +27,11 @@ class Test_1_EnbRrcConnectionProcedure(unittest.TestCase):
         uplinkGrant = 34
         rrcTransactionIdentifier = 20
         interface, channelInfo, message = rrcConnectionRequest(temporaryCrnti, "randomValue", 3434, "moSignaling")
-        self.ueIoService.sendMessage((localhost(),9000), interface, channelInfo, message)
-        time.sleep(0.2) # wait so that the message is not sent the the enb rrc message handler
-        self.enbProcedure.execute((localhost(),9001),  interface, channelInfo, message, temporaryCrnti, 
-                                  uplinkGrant, rrcTransactionIdentifier)
+        #self.ueIoService.sendMessage((localhost(),9000), interface, channelInfo, message)
+        # time.sleep(0.2) # wait so that the message is not sent the the enb rrc message handler
+        self.enbProcedure.handleRrcEstablishmentMessages((localhost(),9001),  interface, channelInfo, message, 
+                {"temporaryCrnti": temporaryCrnti, "uplinkGrant": uplinkGrant, 
+                 "rrcTransactionIdentifier": rrcTransactionIdentifier})
         time.sleep(1.7) # more than 3* 0.5 = 1.5 seconds
         self.assertEqual(self.enbResult,
             EnbRrcConnectionEstablishmentProcedure.ErrorNoRRCConnectionCompleteMessage)
@@ -47,14 +42,16 @@ class Test_1_EnbRrcConnectionProcedure(unittest.TestCase):
         uplinkGrant = 34
         rrcTransactionIdentifier = 20
         interface, channelInfo, message = rrcConnectionRequest(temporaryCrnti, "randomValue", 3434, "moSignaling")
-        self.ueIoService.sendMessage((localhost(),9000), interface, channelInfo, message)
-        time.sleep(0.2) # wait so that the message is not sent the the enb rrc message handler
-        self.enbProcedure.execute((localhost(),9001),  interface, channelInfo, message, temporaryCrnti, 
-                                  uplinkGrant, rrcTransactionIdentifier)
+        # self.ueIoService.sendMessage((localhost(),9000), interface, channelInfo, message)
+        #time.sleep(0.2) # wait so that the message is not sent the the enb rrc message handler
+        self.enbProcedure.handleRrcEstablishmentMessages((localhost(),9001),  interface, channelInfo, message, 
+                {"temporaryCrnti": temporaryCrnti, "uplinkGrant": uplinkGrant, 
+                 "rrcTransactionIdentifier": rrcTransactionIdentifier})
         time.sleep(0.2)
         interface, channelInfo, message = rrcConnectionSetupComplete(rrcTransactionIdentifier, 28001, {"nasMessageType": "attachRequest"})
-        self.ueIoService.sendMessage((localhost(),9000), interface, channelInfo, message)
-        time.sleep(0.2) # more than 3* 0.5 = 1.5 seconds
+        # self.ueIoService.sendMessage((localhost(),9000), interface, channelInfo, message)
+        # time.sleep(0.2) # more than 3* 0.5 = 1.5 seconds
+        self.enbProcedure.handleRrcEstablishmentMessages((localhost(),9001),  interface, channelInfo, message)
         self.assertEqual(self.enbResult,
             EnbRrcConnectionEstablishmentProcedure.Success)
         
@@ -64,56 +61,57 @@ class Test_1_EnbRrcConnectionProcedure(unittest.TestCase):
         uplinkGrant = 34
         rrcTransactionIdentifier = 20
         interface, channelInfo, message = rrcConnectionRequest(temporaryCrnti, "randomValue", 3434, "moSignaling")
-        self.ueIoService.sendMessage((localhost(),9000), interface, channelInfo, message)
-        time.sleep(0.2) # wait so that the message is not sent the the enb rrc message handler
-        self.enbProcedure.execute((localhost(),9001),  interface, channelInfo, message, temporaryCrnti, 
-                                  uplinkGrant, rrcTransactionIdentifier)
+        # self.ueIoService.sendMessage((localhost(),9000), interface, channelInfo, message)
+        # time.sleep(0.2) # wait so that the message is not sent the the enb rrc message handler
+        self.enbProcedure.handleRrcEstablishmentMessages((localhost(),9001),  interface, channelInfo, message, 
+                {"temporaryCrnti": temporaryCrnti, "uplinkGrant": uplinkGrant, 
+                 "rrcTransactionIdentifier": rrcTransactionIdentifier})
         time.sleep(0.2)
         interface, channelInfo, message = rrcConnectionSetupComplete(rrcTransactionIdentifier, 28001, {"nasMessageType": "attachRequest"})
-        self.ueIoService.sendMessage((localhost(),9000), interface, channelInfo, message)
-        time.sleep(0.2) # more than 3* 0.5 = 1.5 seconds
+        # self.ueIoService.sendMessage((localhost(),9000), interface, channelInfo, message)
+        # time.sleep(0.2) # more than 3* 0.5 = 1.5 seconds
+        self.enbProcedure.handleRrcEstablishmentMessages((localhost(),9001),  interface, channelInfo, message)
         self.assertEqual(self.enbResult, EnbRrcConnectionEstablishmentProcedure.Success)
         time.sleep(0.2)
         self.enbResult = None
-        self.ueIoService.sendMessage((localhost(),9000), interface, channelInfo, message)
+        self.enbProcedure.handleRrcEstablishmentMessages((localhost(),9001),  interface, channelInfo, message)
         time.sleep(0.2)
         self.assertEqual(self.enbResult, None)
 
-
-class Test_2_RrcConnectionEstablishmentEnd2End(unittest.TestCase):
-
-    def setUp(self):
-        self.enbIoService = IoService("enb", 9000)
-        self.ueIoService = IoService("ue", 9001)
-        [s.start() for s in self.enbIoService, self.ueIoService]
-        self.ueProcedure = RrcConnectionEstablishmentProcedure(
-            {"nasMessageType": "attachRequest"}, 5, 0.7, 0.5, 2.0, (localhost(), 9000),
-            self.ueIoService, self.__procedureUeCompleteCallback__)
-        self.enbProcedure = EnbMain(self.enbIoService, self.__procedureEnbCompleteCallback__)
-    
-    def tearDown(self):
-        [s.stop() for s in self.enbIoService, self.ueIoService]
-
-    def __procedureUeCompleteCallback__(self, result):
-        self.ueResult = result
-    
-    def __procedureEnbCompleteCallback__(self, results):
-        self.enbResults = results
-    
-    def test1_singleRrcEstablishmentSuccess(self):
-        self.ueResult = None
-        self.enbResults = None
-        temporaryCrnti = 200
-        rrcTransactionIdentifier = 20
-        self.enbProcedure.execute()
-        interface, channelInfo, message = rrcConnectionRequest(temporaryCrnti, "randomValue", 3434, "moSignaling")
-        self.ueIoService.sendMessage((localhost(),9000), interface, channelInfo, message)
-        time.sleep(0.2)
-        interface, channelInfo, message = rrcConnectionSetupComplete(rrcTransactionIdentifier, 28001, 
-                                                                     {"nasMessageType": "attachRequest"})
-        self.ueIoService.sendMessage((localhost(),9000), interface, channelInfo, message)
-        time.sleep(0.2) # more than 3* 0.5 = 1.5 seconds
-        self.assertEqual(self.enbResults, EnbRrcConnectionEstablishmentProcedure.Success)        
+#class Test_2_EnbeMainProcedure(unittest.TestCase):
+#
+#    def setUp(self):
+#        self.enbIoService = IoService("enb", 9000)
+#        self.ueIoService = IoService("ue", 9001)
+#        [s.start() for s in self.enbIoService, self.ueIoService]
+#        self.ueProcedure = RrcConnectionEstablishmentProcedure(
+#            {"nasMessageType": "attachRequest"}, 5, 0.7, 0.5, 2.0, (localhost(), 9000),
+#            self.ueIoService, self.__procedureUeCompleteCallback__)
+#        self.enbProcedure = EnbMain(self.enbIoService, self.__procedureEnbCompleteCallback__)
+#    
+#    def tearDown(self):
+#        [s.stop() for s in self.enbIoService, self.ueIoService]
+#
+#    def __procedureUeCompleteCallback__(self, result):
+#        self.ueResult = result
+#    
+#    def __procedureEnbCompleteCallback__(self, results):
+#        self.enbResults = results
+#    
+#    def test1_singleRrcEstablishmentSuccess(self):
+#        self.ueResult = None
+#        self.enbResults = None
+#        temporaryCrnti = 200
+#        rrcTransactionIdentifier = 20
+#        self.enbProcedure.execute()
+#        interface, channelInfo, message = rrcConnectionRequest(temporaryCrnti, "randomValue", 3434, "moSignaling")
+#        self.ueIoService.sendMessage((localhost(),9000), interface, channelInfo, message)
+#        time.sleep(0.2)
+#        interface, channelInfo, message = rrcConnectionSetupComplete(rrcTransactionIdentifier, 28001, 
+#                                                                     {"nasMessageType": "attachRequest"})
+#        self.ueIoService.sendMessage((localhost(),9000), interface, channelInfo, message)
+#        time.sleep(0.2) # more than 3* 0.5 = 1.5 seconds
+#        self.assertEqual(self.enbResults, EnbRrcConnectionEstablishmentProcedure.Success)        
         
         
 #    def test_2_noContentionResolutionIdentityReceived(self):

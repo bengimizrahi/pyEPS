@@ -4,13 +4,14 @@ import random
 from ...messages import randomAccessResponse, contentionResolutionIdentity, rrcConnectionSetup
 
 class EnbMain(object):
-    def __init__(self, ioService, procedureCompleteCallback):
+    def __init__(self, ioService):
         self.ioService = ioService
         self.ueContextInfo = {}
-        self.procedureCompleteCallback = procedureCompleteCallback
         self.numRrcEstablishmentPorceduresActive = 0
         self.numRrcEstablishmentsHandled = 0
         self.rrcEstablishmentConclusions = []
+        self.ongoingRrcEstablishmentProcedures = {}
+        self.rrcTransactionIdToCrntiMapping = {}
         
     def execute(self):    
         self.ioService.addIncomingMessageCallback(self.__enbIncomingMessageCallback__)
@@ -24,13 +25,22 @@ class EnbMain(object):
             temporaryCrnti = self.__generateTemporaryCrnti__()
             uplinkGrant = self.__generateUplinkGrant__()
             rrcTransactionIdentifier = self.__generateRrcTrasactionIdentifier__()
-            # should start a thread here and let it handle the RRC establishment 
-            # the thread dies either when establishment has completed successfully or failed.
-            print "ioService is alive: {}".format(self.ioService.alive)
-            self.enbProcedure = EnbRrcConnectionEstablishmentProcedure(3, 0.5, self.ioService, 
-                self.__enbRrcProcedureCompleteCallback__)
-            self.enbProcedure.execute(source, interface, channelInfo, message, temporaryCrnti, uplinkGrant, rrcTransactionIdentifier)
- 
+            self.rrcTransactionIdToCrntiMapping[rrcTransactionIdentifier] = temporaryCrnti
+            # create an object to handle the rrc establishment procedure
+            self.ongoingRrcEstablishmentProcedures[temporaryCrnti] = EnbRrcConnectionEstablishmentProcedure(3, 0.5, 
+                    self.ioService, self.__enbRrcProcedureCompleteCallback__)
+            self.ongoingRrcEstablishmentProcedures[temporaryCrnti].handleRrcConnectionMessages(source, interface, 
+                    channelInfo, message, {"temporaryCrnti": temporaryCrnti, 
+                                            "uplinkGrant": uplinkGrant, "rrcTransactionIdentifier": rrcTransactionIdentifier})
+        if message["messageName"] == "rrcConnectionSetupComplete":
+            rrcTransactionIdentifier = message["rrcTransactionIdentifier"]
+            if rrcTransactionIdentifier in self.rrcTransactionIdToCrntiMapping:
+                temporaryCrnti = self.rrcTransactionIdToCrntiMapping[rrcTransactionIdentifier]
+                self.ongoingRrcEstablishmentProcedures[temporaryCrnti].handleRrcConnectionMessages(source, interface, 
+                    channelInfo, message)
+            else:
+                print "Transaction Identifier {} not provided by this eNB. Message ignored:{}".format(rrcTransactionIdentifier, message)
+                
     def __sendRandomAccessResponse__(self,receivedSource,receivedInterface,receivedChannelInfo, receivedMessage):
         raRnti = receivedChannelInfo["raRnti"]
         rapid = receivedMessage["rapid"]
@@ -58,10 +68,10 @@ class EnbMain(object):
         self.numRrcEstablishmentPorceduresActive -= 1
         self.rrcEstablishmentConclusions.append(result)
         time.sleep(2)
-        self.enbProcedure.terminate()
-        if self.numRrcEstablishmentPorceduresActive == 0:
-            self.procedureCompleteCallback(self.rrcEstablishmentConclusions)
-    
+        rrcTransactionIdentifier = self.ongoingRrcEstablishmentProcedures.returnRrcTransactionIdentifier()
+        del self.rrcTransactionIdToCrntiMapping[rrcTransactionIdentifier]
+        del self.ongoingRrcEstablishmentProcedures[args["Crnti"]]
+   
 
 class EnbRrcConnectionEstablishmentProcedure(object):
     
@@ -75,19 +85,8 @@ class EnbRrcConnectionEstablishmentProcedure(object):
         self.procedureCompleteCallback = procedureCompleteCallback
         self.ioService = ioService
         self.attemptNo = 0
-
-    def execute(self, source, interface, channelInfo, message, temporaryCrnti, uplinkGrant, rrcTransactionIdentifier):
-        self.temporaryCrnti = temporaryCrnti
-        self.uplinkGrant = uplinkGrant
-        self.rrcTransactionIdentifier = rrcTransactionIdentifier        
-        self.ueAddress = source
         self.procedureCompleteCallbackExecuted = False
-        self.ioService.addIncomingMessageCallback(self.__enbRrcIncomingMessageCallback__)
-        self.__enbRrcIncomingMessageCallback__(source, interface, channelInfo, message)
               
-    def terminate(self):
-        self.ioService.removeIncomingMessageCallback(self.__incomingMessageCallback__)
-
     def __notifyProcedureCompletion__(self, result):
         if result == self.Success:
             self.procedureCompleteCallback(result, {"cRnti": self.ueCrnti, "identityType": self.ueIdentityType, 
@@ -96,9 +95,13 @@ class EnbRrcConnectionEstablishmentProcedure(object):
         else:
             self.procedureCompleteCallback(result)
             
-    def __enbRrcIncomingMessageCallback__(self, source, interface, channelInfo, message):
-        if ( (message["messageName"] == "rrcConnectionRequest") and \
-                  (channelInfo["cRnti"] == self.temporaryCrnti) ):
+    def handleRrcEstablishmentMessages(self, source, interface, channelInfo, message, args=None):
+        if message["messageName"] == "rrcConnectionRequest":
+            self.temporaryCrnti = args["temporaryCrnti"]
+            self.uplinkGrant = args["uplinkGrant"]
+            self.rrcTransactionIdentifier = args["rrcTransactionIdentifier"]        
+            self.ueAddress = source
+            self.procedureCompleteCallbackExecuted = False             
             self.ueCrnti = channelInfo["cRnti"]
             self.ueIdentityType = message["ueIdentity"]["type"]
             self.ueIdentityValue = message["ueIdentity"]["value"]
@@ -132,3 +135,6 @@ class EnbRrcConnectionEstablishmentProcedure(object):
             self.__sendRrcConnectionSetup__()
         else:
             self.__notifyProcedureCompletion__(self.ErrorNoRRCConnectionCompleteMessage)
+            
+    def returnRrcTransactionIdentifier(self):
+        return self.rrcTransactionIdentifier
