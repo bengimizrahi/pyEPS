@@ -12,29 +12,46 @@ randomAccessRequest = lambda raRnti, rapid: (
     }
 )
 
+randomAccessResponse = \
+    lambda raRnti, rapid, temporaryCrnti, uplinkGrant: (
+        "uu",
+        {
+         "physicalChannel" :"pdcch/pdsch",   #RA-RNTI is in the PDCCH. 
+         "transportChannel": "dl-sch",  # RAPID and UL Grant and Temp-CRNTI are in PDSCH
+         "logicalChannel": "None",
+         "raRnti" : raRnti   # the crc bits of pdcch are scrambled by raRnti
+         },
+         {
+          "messageName": "randomAccessResponse",
+          "rapid": rapid,  # number between 1 and 64
+          "uplinkGrant": uplinkGrant,
+          "temporaryCrnti": temporaryCrnti
+         } 
+) 
+
 rrcConnectionRequest = \
-    lambda cRnti, ueIdentityType, ueIdentityValue, establishmentCause: (
+    lambda cRnti, ueIdentityType, ueIdentityValue, rrcEstablishmentCause: (
         "uu",
         {
          "physicalChannel" :"pusch",
          "transportChannel": "ul-sch",
          "logicalChannel": "ccch",
-         "C-RNTI": cRnti #When using CCCH (RRC Establishment), the C-RNTI is used as input
-# when scrambling the PUSCH prior to modulation. When using DCCH (RRC Connection
-# re-establishment, the C-RNTI is included as part of the MAC header.
+         "cRnti": cRnti #When using CCCH (RRC Establishment), the C-RNTI is used as input
+                        # when scrambling the PUSCH prior to modulation. When using DCCH (RRC Connection
+                        # re-establishment, the C-RNTI is included as part of the MAC header. 
         },
         {
          "messageName": "rrcConnectionRequest",
          "ueIdentity" : {
           "type": ueIdentityType,
-          "randomValue": ueIdentityValue
+          "value": ueIdentityValue
          },
-         "establishmentCause": establishmentCause # mo-signalling used for Attach
+         "rrcEstablishmentCause": rrcEstablishmentCause # mo-signalling used for Attach
         }
 )
 
 contentionResolutionIdentity = \
-    lambda cRnti, ueIdentityType, ueIdentityValue, establishmentCause: (
+    lambda cRnti, messageContent: (
         "uu",
         {
          "physicalChannel" :"pdsch",
@@ -42,14 +59,23 @@ contentionResolutionIdentity = \
          "logicalChannel": "none",
          "C-RNTI": cRnti  # the PDCCH CRC bits are scrambled by the temporary CRNTI
         },
+        messageContent
+)
+
+rrcConnectionSetup =  \
+    lambda cRnti, rrcTransactionIdentifier : (
+        "uu",
         {
-         "messageName": "contentionResolutionIdentity",  # this is a mirror of the L3 message sent by the UE
-         "ueIdentity" : {
-          "type": ueIdentityType,
-          "randomValue": ueIdentityValue
+         "physicalChannel" :"pusch",    
+         "transportChannel": "ul-sch",  
+         "logicalChannel": "ccch",
+         "puschScramblingInput": cRnti,  # The crnti scambles the pusch channel
+         "lcid": "SRB0"   # The MAC header contains the Logical ID                                                
          },
-         "establishmentCause": establishmentCause # mo-signalling used for Attach
-        }
+         {
+          "messageName": "rrcConnectionSetup",
+          "rrcTransactionIdentifier" : rrcTransactionIdentifier
+         }
 )
 
 rrcConnectionSetupComplete = \
