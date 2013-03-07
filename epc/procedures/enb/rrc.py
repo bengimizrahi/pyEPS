@@ -8,8 +8,7 @@ class RrcConnectionEstablishmentProcedure(object):
     Success, ErrorNoRrcConnectionCompleteMessage = range(2)
 
     def __init__(self, maxRrcConnectionSetupAttempts, rrcConnectionSetupTimeout, 
-                 ioService, procedureCompleteCallback):
-
+            ioService, procedureCompleteCallback):
         self.maxRrcConnectionSetupAttempts = maxRrcConnectionSetupAttempts # not defined in standards
         self.rrcConnectionSetupTimeout = rrcConnectionSetupTimeout
         self.procedureCompleteCallback = procedureCompleteCallback
@@ -19,10 +18,13 @@ class RrcConnectionEstablishmentProcedure(object):
 
     def __notifyProcedureCompletion__(self, result):
         if result == self.Success:
-            self.procedureCompleteCallback(result, self.ueCrnti, self.rrcTransactionIdentifier, 
-                {"cRnti": self.ueCrnti, "ueIdentity": self.ueIdentity, 
-                 "rrcEstablishmentCause": self.rrcEstablishmentCause, 
-                "selectedPlmnIdentity": self.ueSelectedPlmnIdentity, "dedicatedInfoNas": self.uededicatedInfoNas})
+            self.procedureCompleteCallback(result, self.ueCrnti, self.rrcTransactionIdentifier, {
+                "cRnti": self.ueCrnti,
+                "ueIdentity": self.ueIdentity,
+                "rrcEstablishmentCause": self.rrcEstablishmentCause,
+                "selectedPlmnIdentity": self.ueSelectedPlmnIdentity,
+                "dedicatedInfoNas": self.uededicatedInfoNas
+            })
         else:
             self.procedureCompleteCallback(result, self.ueCrnti, self.rrcTransactionIdentifier)
 
