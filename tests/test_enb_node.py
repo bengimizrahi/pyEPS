@@ -20,7 +20,7 @@ class TestEnb(unittest.TestCase):
         [s.stop() for s in self.ueIoServices]
         self.enbIoService.stop()
 
-    def test_noRRCConnectionSetupCompleteReceived(self):
+    def test_noRrcConnectionSetupCompleteReceived(self):
         temporaryCrnti = 0
         self.enbProcedure.execute()
         interface, channelInfo, message = rrcConnectionRequest(temporaryCrnti, "randomValue", 3434, "moSignaling")
@@ -62,7 +62,7 @@ class TestEnb(unittest.TestCase):
         print "UE context information in eNB"
         print self.enbProcedure.ueContext
 
-class TestUe2EnbRrrcEstablishment(unittest.TestCase):
+class TestUe2EnbRrcEstablishment(unittest.TestCase):
 
     def setUp(self):
         self.enbIoService = IoService("enb", 9000)
