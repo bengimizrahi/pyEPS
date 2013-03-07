@@ -11,7 +11,6 @@ class Enb(object):
         self.ioService = ioService
         self.ueContext = {}
         self.numRrcEstablishmentsHandled = 0
-        self.rrcEstablishmentConclusions = []
         self.ongoingRrcEstablishmentProcedures = {}
         self.rrcTransactionIdToCrntiMapping = {}
         self.rrcTransIdIndex = 0
