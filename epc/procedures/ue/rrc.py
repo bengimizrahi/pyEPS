@@ -7,6 +7,16 @@ class RrcConnectionEstablishmentProcedure(object):
     Success, ErrorNoRandomAccessResponse, ErrorNoContentionResolutionIdentity, ErrorNoRrcConnectionSetup = range(4)
     
     def __init__(self, procedureParameters, enbAddress, ioService, procedureCompleteCallback, args=None):
+        # bm: I gathered all the parameters into 'procedureParameters',
+        #     looks like you also gathered the rest into 'args'. You might
+        #     want to either:
+        #     -  Group them all into one dictionary, or
+        #     -  Redistribute the items inside 'procedureParameters' and 'args'
+        #        so that the groups make sense. Ex: seems like 'initialNasMessage'
+        #        should be moved to 'args'. After that you might also want to
+        #        rename 'procedureParameters' & 'args' to something else that makes
+        #        it more self-documented (optional).
+        #     [remove this comment after done]
         self.procedureParameters = procedureParameters
         self.enbAddress = enbAddress
         self.ioService = ioService
