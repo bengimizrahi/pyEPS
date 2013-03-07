@@ -57,7 +57,6 @@ class Enb(object):
         # need to update this routine to select appropriate cRnti
         self.cRntiIndex += 1
         return ((self.cRntiIndex - 1)  % 256)
-        # return 200  # for testing
 
     def __generateUplinkGrant__(self):
         # need to create a routine to generate uplink grant
