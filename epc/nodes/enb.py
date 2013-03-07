@@ -10,6 +10,9 @@ class Enb(object):
 
     def __init__(self, ioService):
         self.ioService = ioService
+        # bm: I believe Enb should create and own its IoService. Who would
+        #     give it the IoService?
+        #     [remove comment if it is still appropriate]
         self.ueContext = {}
         self.numRrcEstablishmentsHandled = 0
         self.ongoingRrcEstablishmentProcedures = {}
