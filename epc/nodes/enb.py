@@ -57,8 +57,8 @@ class Enb(object):
             receivedChannelInfo, receivedMessage, temporaryCrnti, uplinkGrant):
         raRnti = receivedChannelInfo["raRnti"]
         rapid = receivedMessage["rapid"]
-        interface, channelInfo, message = randomAccessResponse(raRnti, rapid, temporaryCrnti, uplinkGrant)
-        self.ioService.sendMessage(receivedSource, interface, channelInfo, message)
+        self.ioService.sendMessage(receivedSource, *randomAccessResponse(
+            raRnti, rapid, temporaryCrnti, uplinkGrant))
 
     def __generateTemporaryCrnti__(self):
         # need to update this routine to select appropriate cRnti
