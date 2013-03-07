@@ -60,13 +60,9 @@ class Enb(object):
         return random.randint(100,400)
 
     def __generateRrcTransactionIdentifier__(self):
-        # need to create a routine to generate uplink grant
+        # need to create a routine to generate transaction id
         self.rrcTransIdIndex += 1
         return ((self.rrcTransIdIndex - 1) % 256)
-
-        # return 20 # for testing
-        # bm: It is comment still valid?
-        #     [remove comment after read]
 
     def __rrcProcedureCompleteCallback__(self, result, cRnti, rrcTransactionIdentifier, args=None):
         if result == RrcConnectionEstablishmentProcedure.Success:
