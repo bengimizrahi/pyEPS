@@ -3,7 +3,9 @@ import random
 
 from ...messages.rrc import randomAccessResponse, contentionResolutionIdentity, rrcConnectionSetup
 
+
 class EnbMain(object):
+
     def __init__(self, ioService):
         self.ioService = ioService
         self.ueContext = {}
@@ -31,10 +33,11 @@ class EnbMain(object):
             rrcTransactionIdentifier = self.__generateRrcTrasactionIdentifier__()
             self.rrcTransactionIdToCrntiMapping[rrcTransactionIdentifier] = cRnti
             # create an object to handle the rrc establishment procedure
+            # bm: It is actually obvious, so I think we should remove this comment
             self.ongoingRrcEstablishmentProcedures[cRnti] = EnbRrcConnectionEstablishmentProcedure(3, 0.5, 
-                    self.ioService, self.__enbRrcProcedureCompleteCallback__)
+                self.ioService, self.__enbRrcProcedureCompleteCallback__)
             self.ongoingRrcEstablishmentProcedures[cRnti].handleRrcEstablishmentMessages(source, interface, 
-                    channelInfo, message, {"rrcTransactionIdentifier": rrcTransactionIdentifier})
+                channelInfo, message, {"rrcTransactionIdentifier": rrcTransactionIdentifier})
         if message["messageName"] == "rrcConnectionSetupComplete":
             rrcTransactionIdentifier = message["rrcTransactionIdentifier"]
             if rrcTransactionIdentifier in self.rrcTransactionIdToCrntiMapping:
@@ -80,6 +83,7 @@ class EnbMain(object):
         del self.ongoingRrcEstablishmentProcedures[cRnti]
         self.rrcEstablishmentSuccess[cRnti] = result
 
+
 class EnbRrcConnectionEstablishmentProcedure(object):
 
     Success, ErrorNoRRCConnectionCompleteMessage = range(2)
@@ -104,6 +108,9 @@ class EnbRrcConnectionEstablishmentProcedure(object):
             self.procedureCompleteCallback(result, self.ueCrnti, self.rrcTransactionIdentifier)
 
     def handleRrcEstablishmentMessages(self, source, interface, channelInfo, message, args=None):
+        # bm: We should remove the 's' at the end of this function name
+        #     We are handling only one message at a time, not a bulk of messages.
+        #     [remove this comment after the fix]
         if message["messageName"] == "rrcConnectionRequest":
             # self.temporaryCrnti = channelInfo["cRnti"]
             self.rrcTransactionIdentifier = args["rrcTransactionIdentifier"]        
