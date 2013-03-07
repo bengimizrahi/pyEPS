@@ -32,8 +32,6 @@ class EnbMain(object):
             cRnti = channelInfo["cRnti"]
             rrcTransactionIdentifier = self.__generateRrcTransactionIdentifier__()
             self.rrcTransactionIdToCrntiMapping[rrcTransactionIdentifier] = cRnti
-            # create an object to handle the rrc establishment procedure
-            # bm: It is actually obvious, so I think we should remove this comment
             self.ongoingRrcEstablishmentProcedures[cRnti] = EnbRrcConnectionEstablishmentProcedure(3, 0.5, 
                 self.ioService, self.__enbRrcProcedureCompleteCallback__)
             self.ongoingRrcEstablishmentProcedures[cRnti].handleRrcEstablishmentMessages(source, interface, 
