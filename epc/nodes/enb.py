@@ -10,7 +10,6 @@ class Enb(object):
     def __init__(self, ioService):
         self.ioService = ioService
         self.ueContext = {}
-        self.numRrcEstablishmentProceduresActive = 0
         self.numRrcEstablishmentsHandled = 0
         self.rrcEstablishmentConclusions = []
         self.ongoingRrcEstablishmentProcedures = {}
@@ -28,7 +27,6 @@ class Enb(object):
             uplinkGrant = self.__generateUplinkGrant__()
             self.__sendRandomAccessResponse__(source, interface, channelInfo, message, temporaryCrnti, uplinkGrant)
         if message["messageName"] == "rrcConnectionRequest":
-            self.numRrcEstablishmentProceduresActive += 1
             self.numRrcEstablishmentsHandled += 1
             cRnti = channelInfo["cRnti"]
             rrcTransactionIdentifier = self.__generateRrcTransactionIdentifier__()
@@ -75,7 +73,6 @@ class Enb(object):
         if result == RrcConnectionEstablishmentProcedure.Success:
             if not cRnti in self.ueContext:
                 self.ueContext[cRnti] = args
-        self.numRrcEstablishmentProceduresActive -= 1
         time.sleep(0.5) # wait for another RRC complete if outstanding
         del self.rrcTransactionIdToCrntiMapping[rrcTransactionIdentifier]
         del self.ongoingRrcEstablishmentProcedures[cRnti]
