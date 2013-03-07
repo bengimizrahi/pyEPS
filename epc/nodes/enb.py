@@ -1,5 +1,6 @@
 import random
 import time
+from collections import Counter
 
 from ..procedures.enb.rrc import RrcConnectionEstablishmentProcedure
 from ..messages.rrc import randomAccessResponse
@@ -16,17 +17,25 @@ class Enb(object):
         self.rrcTransIdIndex = 0
         self.cRntiIndex = 0
         self.rrcEstablishmentSuccess = {}
+        self.kpis = Counter(
+            numRandomAccessRequestsReceived = 0,
+            numRrcConnectionRequestsReceived = 0,
+            numRrcConnectionSetupCompletesReceived = 0,
+            numRrcConnectionEstablishmentFailures = 0,
+            numRrcConnectionEstablishmentSuccesses = 0
+        )
 
     def execute(self):
         self.ioService.addIncomingMessageCallback(self.__incomingMessageCallback__)
 
     def __incomingMessageCallback__(self, source, interface, channelInfo, message):
         if message["messageName"] == "randomAccessRequest":
+            self.kpis["numRandomAccessRequestsReceived"] += 1
             temporaryCrnti = self.__generateTemporaryCrnti__()
             uplinkGrant = self.__generateUplinkGrant__()
             self.__sendRandomAccessResponse__(source, interface, channelInfo, message, temporaryCrnti, uplinkGrant)
         if message["messageName"] == "rrcConnectionRequest":
-            self.numRrcEstablishmentsHandled += 1
+            self.kpis["numRrcConnectionRequestsReceived"] += 1
             cRnti = channelInfo["cRnti"]
             rrcTransactionIdentifier = self.__generateRrcTransactionIdentifier__()
             self.rrcTransactionIdToCrntiMapping[rrcTransactionIdentifier] = cRnti
@@ -35,6 +44,7 @@ class Enb(object):
             self.ongoingRrcEstablishmentProcedures[cRnti].handleRrcEstablishmentMessage(source, interface,
                 channelInfo, message, {"rrcTransactionIdentifier": rrcTransactionIdentifier})
         if message["messageName"] == "rrcConnectionSetupComplete":
+            self.kpis["numRrcConnectionSetupCompletesReceived"] += 1
             rrcTransactionIdentifier = message["rrcTransactionIdentifier"]
             if rrcTransactionIdentifier in self.rrcTransactionIdToCrntiMapping:
                 cRnti = self.rrcTransactionIdToCrntiMapping[rrcTransactionIdentifier]
@@ -65,6 +75,10 @@ class Enb(object):
         return ((self.rrcTransIdIndex - 1) % 256)
 
     def __rrcProcedureCompleteCallback__(self, result, cRnti, rrcTransactionIdentifier, args=None):
+        kpiName = (result == RrcConnectionEstablishmentProcedure.Success and
+            "numRrcConnectionEstablishmentSuccesses" or
+            "numRrcConnectionEstablishmentFailures")
+        self.kpis[kpiName] += 1
         if result == RrcConnectionEstablishmentProcedure.Success:
             if not cRnti in self.ueContext:
                 self.ueContext[cRnti] = args
