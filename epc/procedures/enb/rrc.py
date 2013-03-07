@@ -72,6 +72,8 @@ class RrcConnectionEstablishmentProcedure(object):
             self.__sendRrcConnectionSetup__()
         else:
             self.__notifyProcedureCompletion__(self.ErrorNoRrcConnectionCompleteMessage)
+            # bm: Should we not set precedureCompleteCallbackExecuted to True
+            #     [Remove comment after read]
 
     def returnRrcTransactionIdentifier(self):
         return self.rrcTransactionIdentifier
