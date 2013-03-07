@@ -27,14 +27,14 @@ class TestEnbRrcConnectionProcedure(unittest.TestCase):
         uplinkGrant = 34
         rrcTransactionIdentifier = 0
         interface, channelInfo, message = rrcConnectionRequest(temporaryCrnti, "randomValue", 3434, "moSignaling")
-        self.enbProcedure.handleRrcEstablishmentMessages((localhost(), 9001),  interface, channelInfo, message, {
+        self.enbProcedure.handleRrcEstablishmentMessage((localhost(), 9001),  interface, channelInfo, message, {
             "temporaryCrnti": temporaryCrnti,
             "uplinkGrant": uplinkGrant, 
             "rrcTransactionIdentifier": rrcTransactionIdentifier
         })
         time.sleep(1.7) # more than 3 * 0.5 = 1.5 seconds
         self.assertEqual(self.enbResult,
-            EnbRrcConnectionEstablishmentProcedure.ErrorNoRRCConnectionCompleteMessage)
+            EnbRrcConnectionEstablishmentProcedure.ErrorNoRrcConnectionCompleteMessage)
 
     def test_rrcConnectionEstablishmentSuccess(self):
         self.enbResult = None
@@ -42,14 +42,14 @@ class TestEnbRrcConnectionProcedure(unittest.TestCase):
         uplinkGrant = 34
         rrcTransactionIdentifier = 0
         interface, channelInfo, message = rrcConnectionRequest(temporaryCrnti, "randomValue", 3434, "moSignaling")
-        self.enbProcedure.handleRrcEstablishmentMessages((localhost(), 9001),  interface, channelInfo, message, {
+        self.enbProcedure.handleRrcEstablishmentMessage((localhost(), 9001),  interface, channelInfo, message, {
             "temporaryCrnti": temporaryCrnti,
             "uplinkGrant": uplinkGrant, 
             "rrcTransactionIdentifier": rrcTransactionIdentifier
         })
         time.sleep(0.2)
         interface, channelInfo, message = rrcConnectionSetupComplete(rrcTransactionIdentifier, 28001, {"nasMessageType": "attachRequest"})
-        self.enbProcedure.handleRrcEstablishmentMessages((localhost(),9001),  interface, channelInfo, message)
+        self.enbProcedure.handleRrcEstablishmentMessage((localhost(),9001),  interface, channelInfo, message)
         self.assertEqual(self.enbResult,
             EnbRrcConnectionEstablishmentProcedure.Success)
 
@@ -59,18 +59,18 @@ class TestEnbRrcConnectionProcedure(unittest.TestCase):
         uplinkGrant = 34
         rrcTransactionIdentifier = 0
         interface, channelInfo, message = rrcConnectionRequest(temporaryCrnti, "randomValue", 3434, "moSignaling")
-        self.enbProcedure.handleRrcEstablishmentMessages((localhost(), 9001),  interface, channelInfo, message, {
+        self.enbProcedure.handleRrcEstablishmentMessage((localhost(), 9001),  interface, channelInfo, message, {
             "temporaryCrnti": temporaryCrnti,
             "uplinkGrant": uplinkGrant, 
             "rrcTransactionIdentifier": rrcTransactionIdentifier
         })
         time.sleep(0.2)
         interface, channelInfo, message = rrcConnectionSetupComplete(rrcTransactionIdentifier, 28001, {"nasMessageType": "attachRequest"})
-        self.enbProcedure.handleRrcEstablishmentMessages((localhost(), 9001),  interface, channelInfo, message)
+        self.enbProcedure.handleRrcEstablishmentMessage((localhost(), 9001),  interface, channelInfo, message)
         self.assertEqual(self.enbResult, EnbRrcConnectionEstablishmentProcedure.Success)
         time.sleep(0.2)
         self.enbResult = None
-        self.enbProcedure.handleRrcEstablishmentMessages((localhost(), 9001),  interface, channelInfo, message)
+        self.enbProcedure.handleRrcEstablishmentMessage((localhost(), 9001),  interface, channelInfo, message)
         time.sleep(0.2)
         self.assertEqual(self.enbResult, None)
 
