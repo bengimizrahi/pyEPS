@@ -64,10 +64,10 @@ class RrcConnectionEstablishmentProcedure(object):
         self.ioService.sendMessage(self.ueAddress,
             *rrcConnectionSetup(self.ueCrnti, self.rrcTransactionIdentifier))
         self.rrcConnectionSetupTimer = self.ioService.createTimer(
-            self.rrcConnectionSetupTimeout, self.__onRrcConnectionSetupTimeout__, self.ueCrnti)
+            self.rrcConnectionSetupTimeout, self.__onRrcConnectionSetupTimeout__)
         self.rrcConnectionSetupTimer.start()
 
-    def __onRrcConnectionSetupTimeout__(self, ueCrnti):
+    def __onRrcConnectionSetupTimeout__(self):
         if self.attemptNo < self.maxRrcConnectionSetupAttempts:
             self.__sendRrcConnectionSetup__()
         else:
