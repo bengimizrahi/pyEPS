@@ -10,10 +10,10 @@ class TestEnb(unittest.TestCase):
 
     def setUp(self):
         self.enbIoService = IoService("enb", 9000)
-        self.ueIoServices = [IoService(str(i), 9001 + i) for i in range(2)]
+        self.ueIoServices = [IoService(str(i), 9001 + i) for i in range(20)]
         self.enbIoService.start()
         [s.start() for s in self.ueIoServices]
-        self.enbProcedure = Enb(self.enbIoService)
+        self.enb = Enb(self.enbIoService)
 
     def tearDown(self):
         [s.stop() for s in self.ueIoServices]
@@ -21,33 +21,30 @@ class TestEnb(unittest.TestCase):
 
     def test_noRrcConnectionSetupCompleteReceived(self):
         temporaryCrnti = 0
-        self.enbProcedure.execute()
-        interface, channelInfo, message = rrcConnectionRequest(temporaryCrnti, "randomValue", 3434, "moSignaling")
-        self.ueIoServices[0].sendMessage((localhost(), 9000), interface, channelInfo, message)
+        self.enb.execute()
+        self.ueIoServices[0].sendMessage((localhost(), 9000), *rrcConnectionRequest(temporaryCrnti, "randomValue", 3434, "moSignaling"))
         time.sleep(2.5) # more than 3* 0.5 = 1.5 seconds  + 0.5 seconds
-        self.assertEqual(self.enbProcedure.rrcEstablishmentSuccess[temporaryCrnti], EnbRrcConnectionEstablishmentProcedure.ErrorNoRRCConnectionCompleteMessage)        
+        self.assertEqual(self.enb.kpis["numRrcConnectionEstablishmentFailures"], 1)
 
     def test_singleUeRrcEstablishmentSuccess(self):
         temporaryCrnti = 0
         rrcTransactionIdentifier = 0
-        self.enbProcedure.execute()
-        interface, channelInfo, message = rrcConnectionRequest(temporaryCrnti, "randomValue", 3434, "moSignaling")
-        self.ueIoServices[0].sendMessage((localhost(), 9000), interface, channelInfo, message)
-        interface, channelInfo, message = rrcConnectionSetupComplete(rrcTransactionIdentifier, 28001, 
-                                                                     {"nasMessageType": "attachRequest"})
-        self.ueIoServices[0].sendMessage((localhost(), 9000), interface, channelInfo, message)
+        self.enb.execute()
+        self.ueIoServices[0].sendMessage((localhost(), 9000), *rrcConnectionRequest(
+            temporaryCrnti, "randomValue", 3434, "moSignaling"))
+        self.ueIoServices[0].sendMessage((localhost(), 9000), *rrcConnectionSetupComplete(
+            rrcTransactionIdentifier, 28001, {"nasMessageType": "attachRequest"}))
         time.sleep(1.0) # ensure the enb call back is not waiting for rrc complete
-        self.assertEqual(self.enbProcedure.rrcEstablishmentSuccess[temporaryCrnti], EnbRrcConnectionEstablishmentProcedure.Success)        
+        self.assertEqual(self.enb.kpis["numRrcConnectionEstablishmentSuccesses"], 1)
         print "UE context information in eNB"
-        print self.enbProcedure.ueContext       
+        print self.enb.ueContext
 
     def test_twoUeRrcEstablishmentSuccess(self):
-        self.ueResult = None
-        self.enbResult = None
-        self.enbProcedure.execute()
+        self.enb.execute()
+        [s.sendMessage((localhost(), 9000), *rrcConnectionRequest(
+            i, "randomValue", 3434, "moSignaling")) for i, s in enumerate(self.ueIoServices)]
         for i in range(2):
-            interface, channelInfo, message = rrcConnectionRequest(i, "randomValue", 3434, "moSignaling")
-            self.ueIoServices[0].sendMessage((localhost(), 9000), interface, channelInfo, message)
+            self.ueIoServices[0]
             time.sleep(0.5)
         time.sleep(0.2)
         for i in range(2):
@@ -56,8 +53,8 @@ class TestEnb(unittest.TestCase):
             self.ueIoServices[i].sendMessage((localhost(), 9000), interface, channelInfo, message)
             time.sleep(0.2)
         time.sleep(1.0) # ensure the enb call back is not waiting for rrc complete
-        self.assertEqual(self.enbProcedure.rrcEstablishmentSuccess[0], EnbRrcConnectionEstablishmentProcedure.Success)        
-        self.assertEqual(self.enbProcedure.rrcEstablishmentSuccess[1], EnbRrcConnectionEstablishmentProcedure.Success)        
+        self.assertEqual(self.enb.rrcEstablishmentSuccess[0], EnbRrcConnectionEstablishmentProcedure.Success)
+        self.assertEqual(self.enb.rrcEstablishmentSuccess[1], EnbRrcConnectionEstablishmentProcedure.Success)
         print "UE context information in eNB"
         print self.enbProcedure.ueContext
 
