@@ -32,7 +32,7 @@ class EnbMain(object):
             cRnti = channelInfo["cRnti"]
             rrcTransactionIdentifier = self.__generateRrcTransactionIdentifier__()
             self.rrcTransactionIdToCrntiMapping[rrcTransactionIdentifier] = cRnti
-            self.ongoingRrcEstablishmentProcedures[cRnti] = EnbRrcConnectionEstablishmentProcedure(3, 0.5, 
+            self.ongoingRrcEstablishmentProcedures[cRnti] = RrcConnectionEstablishmentProcedure(3, 0.5, 
                 self.ioService, self.__enbRrcProcedureCompleteCallback__)
             self.ongoingRrcEstablishmentProcedures[cRnti].handleRrcEstablishmentMessages(source, interface, 
                 channelInfo, message, {"rrcTransactionIdentifier": rrcTransactionIdentifier})
@@ -72,7 +72,7 @@ class EnbMain(object):
         #     [remove comment after read]
 
     def __enbRrcProcedureCompleteCallback__(self, result, cRnti, rrcTransactionIdentifier, args=None):
-        if result == EnbRrcConnectionEstablishmentProcedure.Success:
+        if result == RrcConnectionEstablishmentProcedure.Success:
             if not cRnti in self.ueContext:
                 self.ueContext[cRnti] = args
         self.numRrcEstablishmentProceduresActive -= 1
@@ -82,7 +82,7 @@ class EnbMain(object):
         self.rrcEstablishmentSuccess[cRnti] = result
 
 
-class EnbRrcConnectionEstablishmentProcedure(object):
+class RrcConnectionEstablishmentProcedure(object):
 
     Success, ErrorNoRRCConnectionCompleteMessage = range(2)
 

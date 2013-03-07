@@ -2,17 +2,9 @@ import unittest
 import time
 
 from epc.utils.io import IoService, localhost
-from epc.procedures.ue.rrc import RrcConnectionEstablishmentProcedure
-from epc.procedures.enb.rrc import EnbRrcConnectionEstablishmentProcedure, EnbMain
-# bm: For the sake of DRY principle, I believe you should remove the 'Enb' prefix
-#     from 'EnbRrcConnectionEstablishmentProcedure' since it resides in
-#     epc.procedures.enb package. This, indeed, will cause name clash in this
-#     test file. This should not be a problem since in the real use, these will
-#     be used by different network nodes. For this test file you can solve the
-#     name clash as follows:
-#     from epc.procedures.ue.rrc import RrcConnectionEstablishmentProcedure as UeRrcConnectionEstablishmentProcedure
-#     from epc.procedures.enb.rrc import RrcConnectionEstablishmentProcedure as EnbRrcConnectionEstablishmentProcedure
-#     [remove this comment after the fix]
+from epc.procedures.ue.rrc import RrcConnectionEstablishmentProcedure as UeRrcConnectionEstablishmentProcedure
+from epc.procedures.enb.rrc import RrcConnectionEstablishmentProcedure as EnbRrcConnectionEstablishmentProcedure
+from epc.procedures.enb.rrc import EnbMain
 from epc.messages.rrc import rrcConnectionRequest, rrcConnectionSetupComplete
 
 class TestEnbRrcConnectionProcedure(unittest.TestCase):
@@ -142,7 +134,7 @@ class TestUe2EnbRrrcEstablishment(unittest.TestCase):
         self.enbProcedure = EnbMain(self.enbIoService)
         self.ueProcedures = {}
         for i in range(2):
-            self.ueProcedures[i] = RrcConnectionEstablishmentProcedure(
+            self.ueProcedures[i] = UeRrcConnectionEstablishmentProcedure(
                 {"nasMessageType": "attachRequest"}, 5, 0.7, 0.5, 2.0, (localhost(), 9000),
                 self.ueIoServices[i], self.__procedureCompleteCallback__,
                 {"ueIdentityType": "randomValue", "ueIdentityValue": 3434*i,
@@ -161,7 +153,7 @@ class TestUe2EnbRrrcEstablishment(unittest.TestCase):
         self.ueProcedures[0].execute()
         time.sleep(3)
         self.assertEqual(self.enbProcedure.rrcEstablishmentSuccess[0], EnbRrcConnectionEstablishmentProcedure.Success)        
-        self.assertEqual(self.ueresult, RrcConnectionEstablishmentProcedure.Success)
+        self.assertEqual(self.ueresult, UeRrcConnectionEstablishmentProcedure.Success)
         print "UE context information in eNB"
         print self.enbProcedure.ueContext       
 
@@ -175,7 +167,7 @@ class TestUe2EnbRrrcEstablishment(unittest.TestCase):
         time.sleep(3)
         self.assertEqual(self.enbProcedure.rrcEstablishmentSuccess[0], EnbRrcConnectionEstablishmentProcedure.Success)        
         self.assertEqual(self.enbProcedure.rrcEstablishmentSuccess[1], EnbRrcConnectionEstablishmentProcedure.Success)        
-        self.assertEqual(self.ueresult, RrcConnectionEstablishmentProcedure.Success)
+        self.assertEqual(self.ueresult, UeRrcConnectionEstablishmentProcedure.Success)
         print "UE context information in eNB"
         print self.enbProcedure.ueContext       
 
