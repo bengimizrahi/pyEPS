@@ -27,10 +27,7 @@ class RrcConnectionEstablishmentProcedure(object):
         else:
             self.procedureCompleteCallback(result, self.ueCrnti, self.rrcTransactionIdentifier)
 
-    def handleRrcEstablishmentMessages(self, source, interface, channelInfo, message, args=None):
-        # bm: We should remove the 's' at the end of this function name
-        #     We are handling only one message at a time, not a bulk of messages.
-        #     [remove this comment after the fix]
+    def handleRrcEstablishmentMessage(self, source, interface, channelInfo, message, args=None):
         if message["messageName"] == "rrcConnectionRequest":
             # self.temporaryCrnti = channelInfo["cRnti"]
             self.rrcTransactionIdentifier = args["rrcTransactionIdentifier"]        

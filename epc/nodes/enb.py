@@ -35,13 +35,13 @@ class Enb(object):
             self.rrcTransactionIdToCrntiMapping[rrcTransactionIdentifier] = cRnti
             self.ongoingRrcEstablishmentProcedures[cRnti] = RrcConnectionEstablishmentProcedure(3, 0.5, 
                 self.ioService, self.__enbRrcProcedureCompleteCallback__)
-            self.ongoingRrcEstablishmentProcedures[cRnti].handleRrcEstablishmentMessages(source, interface, 
+            self.ongoingRrcEstablishmentProcedures[cRnti].handleRrcEstablishmentMessage(source, interface,
                 channelInfo, message, {"rrcTransactionIdentifier": rrcTransactionIdentifier})
         if message["messageName"] == "rrcConnectionSetupComplete":
             rrcTransactionIdentifier = message["rrcTransactionIdentifier"]
             if rrcTransactionIdentifier in self.rrcTransactionIdToCrntiMapping:
                 cRnti = self.rrcTransactionIdToCrntiMapping[rrcTransactionIdentifier]
-                self.ongoingRrcEstablishmentProcedures[cRnti].handleRrcEstablishmentMessages(source, interface, 
+                self.ongoingRrcEstablishmentProcedures[cRnti].handleRrcEstablishmentMessage(source, interface,
                     channelInfo, message)
             else:
                 print "Transaction Identifier {} not provided by this eNB. Message ignored:{}".format(rrcTransactionIdentifier, message)
