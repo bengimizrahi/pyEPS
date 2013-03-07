@@ -9,7 +9,7 @@ class TestUe2EnbRrcEstablishment(unittest.TestCase):
 
     def setUp(self):
         self.enbIoService = IoService("enb", 9000)
-        self.ueIoServices = [IoService(str(i), 9001 + i) for i in range(2)]
+        self.ueIoServices = [IoService(str(i), 9001 + i) for i in range(20)]
         self.enbIoService.start()
         [s.start() for s in self.ueIoServices]
         self.enbProcedure = Enb(self.enbIoService)
