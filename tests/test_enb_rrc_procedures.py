@@ -23,13 +23,13 @@ class Test_1_EnbRrcConnectionProcedure(unittest.TestCase):
         [s.start() for s in self.enbIoService, self.ueIoService]
         self.enbProcedure = EnbRrcConnectionEstablishmentProcedure(3, 0.5, self.enbIoService, 
             self.__procedureEnbCompleteCallback__)
-    
+
     def tearDown(self):
         [s.stop() for s in self.enbIoService, self.ueIoService]
-   
+
     def __procedureEnbCompleteCallback__(self, result, a, b, args=None):
         self.enbResult = result
-  
+
     def test_1_noRRCConnectionSetupCompleteReceived(self):
         self.enbResult = None
         temporaryCrnti = 0
@@ -57,7 +57,7 @@ class Test_1_EnbRrcConnectionProcedure(unittest.TestCase):
         self.enbProcedure.handleRrcEstablishmentMessages((localhost(),9001),  interface, channelInfo, message)
         self.assertEqual(self.enbResult,
             EnbRrcConnectionEstablishmentProcedure.Success)
-        
+
     def test_3_rrcConnectionEstablishmentSuccessSubsequentRrcCompleteIgnored(self):
         self.enbResult = None
         temporaryCrnti = 0
@@ -85,11 +85,11 @@ class Test_2_EnbMainProcedure(unittest.TestCase):
         self.enbIoService.start()
         [s.start() for s in self.ueIoServices]
         self.enbProcedure = EnbMain(self.enbIoService)
-    
+
     def tearDown(self):
         [s.stop() for s in self.ueIoServices]
         self.enbIoService.stop()
-     
+
     def test1_noRRCConnectionSetupCompleteReceived(self):
         temporaryCrnti = 0
         self.enbProcedure.execute()
@@ -97,7 +97,7 @@ class Test_2_EnbMainProcedure(unittest.TestCase):
         self.ueIoServices[0].sendMessage((localhost(),9000), interface, channelInfo, message)
         time.sleep(2.5) # more than 3* 0.5 = 1.5 seconds  + 0.5 seconds
         self.assertEqual(self.enbProcedure.rrcEstablishmentSuccess[temporaryCrnti], EnbRrcConnectionEstablishmentProcedure.ErrorNoRRCConnectionCompleteMessage)        
-        
+
     def test2_singleUeRrcEstablishmentSuccess(self):
         temporaryCrnti = 0
         rrcTransactionIdentifier = 0
@@ -111,7 +111,7 @@ class Test_2_EnbMainProcedure(unittest.TestCase):
         self.assertEqual(self.enbProcedure.rrcEstablishmentSuccess[temporaryCrnti], EnbRrcConnectionEstablishmentProcedure.Success)        
         print "UE context information in eNB"
         print self.enbProcedure.ueContext       
-        
+
     def test3_twoUeRrcEstablishmentSuccess(self):
         self.ueResult = None
         self.enbResult = None
@@ -131,7 +131,7 @@ class Test_2_EnbMainProcedure(unittest.TestCase):
         self.assertEqual(self.enbProcedure.rrcEstablishmentSuccess[1], EnbRrcConnectionEstablishmentProcedure.Success)        
         print "UE context information in eNB"
         print self.enbProcedure.ueContext
-        
+
 class Test_3_Ue2EnbRrrcEstablishment(unittest.TestCase):
 
     def setUp(self):
@@ -147,14 +147,14 @@ class Test_3_Ue2EnbRrrcEstablishment(unittest.TestCase):
                 self.ueIoServices[i], self.__procedureCompleteCallback__,
                 {"ueIdentityType": "randomValue", "ueIdentityValue": 3434*i,
                  "rrcEstablishmentCause": "moSignaling", "selectedPlmnIdentity": 2801})
-     
+
     def tearDown(self):
         [s.stop() for s in self.ueIoServices]
         self.enbIoService.stop()
- 
+
     def __procedureCompleteCallback__(self, result):
         self.ueresult = result
-         
+
     def test1_singleUeRrcEstablishmentSuccess(self):
         self.ueresult = None
         self.enbProcedure.execute()
@@ -164,7 +164,7 @@ class Test_3_Ue2EnbRrrcEstablishment(unittest.TestCase):
         self.assertEqual(self.ueresult, RrcConnectionEstablishmentProcedure.Success)
         print "UE context information in eNB"
         print self.enbProcedure.ueContext       
-        
+
     def test2_twoUeRrcEstablishmentSuccess(self):
         self.ueresult = None
         self.enbProcedure.execute()
@@ -178,7 +178,7 @@ class Test_3_Ue2EnbRrrcEstablishment(unittest.TestCase):
         self.assertEqual(self.ueresult, RrcConnectionEstablishmentProcedure.Success)
         print "UE context information in eNB"
         print self.enbProcedure.ueContext       
-        
-        
+
+
 if __name__ == "__main__":
     unittest.main()

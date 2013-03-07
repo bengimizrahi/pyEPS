@@ -15,10 +15,10 @@ class EnbMain(object):
         self.rrcTransIdIndex = 0
         self.cRntiIndex = 0
         self.rrcEstablishmentSuccess = {}
-        
-    def execute(self):    
+
+    def execute(self):
         self.ioService.addIncomingMessageCallback(self.__enbIncomingMessageCallback__)
-        
+
     def __enbIncomingMessageCallback__(self, source, interface, channelInfo, message):
         if message["messageName"] == "randomAccessRequest":
             temporaryCrnti = self.__generateTemporaryCrnti__()
@@ -43,14 +43,14 @@ class EnbMain(object):
                     channelInfo, message)
             else:
                 print "Transaction Identifier {} not provided by this eNB. Message ignored:{}".format(rrcTransactionIdentifier, message)
-                
-    def __sendRandomAccessResponse__(self, receivedSource, receivedInterface, 
-                                     receivedChannelInfo, receivedMessage, temporaryCrnti, uplinkGrant):
+
+    def __sendRandomAccessResponse__(self, receivedSource, receivedInterface,
+            receivedChannelInfo, receivedMessage, temporaryCrnti, uplinkGrant):
         raRnti = receivedChannelInfo["raRnti"]
         rapid = receivedMessage["rapid"]
         interface, channelInfo, message = randomAccessResponse(raRnti, rapid, temporaryCrnti, uplinkGrant)
         self.ioService.sendMessage(receivedSource, interface, channelInfo, message)
-        
+
     def __generateTemporaryCrnti__(self):
         # need to update this routine to select appropriate cRnti
         self.cRntiIndex += 1
@@ -67,31 +67,33 @@ class EnbMain(object):
         return ((self.rrcTransIdIndex - 1) % 256)
 
         # return 20 # for testing
+        # bm: It is comment still valid?
+        #     [remove comment after read]
 
     def __enbRrcProcedureCompleteCallback__(self, result, cRnti, rrcTransactionIdentifier, args=None):
         if result == EnbRrcConnectionEstablishmentProcedure.Success:
             if not cRnti in self.ueContext:
                 self.ueContext[cRnti] = args
         self.numRrcEstablishmentProceduresActive -= 1
-        time.sleep(0.5) # wait for another RRC complete if outstanding        
+        time.sleep(0.5) # wait for another RRC complete if outstanding
         del self.rrcTransactionIdToCrntiMapping[rrcTransactionIdentifier]
         del self.ongoingRrcEstablishmentProcedures[cRnti]
         self.rrcEstablishmentSuccess[cRnti] = result
 
 class EnbRrcConnectionEstablishmentProcedure(object):
-    
+
     Success, ErrorNoRRCConnectionCompleteMessage = range(2)
-    
+
     def __init__(self, maxRrcConnectionSetupAttempts, rrcConnectionSetupTimeout, 
                  ioService, procedureCompleteCallback):
- 
+
         self.maxRrcConnectionSetupAttempts = maxRrcConnectionSetupAttempts # not defined in standards
         self.rrcConnectionSetupTimeout = rrcConnectionSetupTimeout
         self.procedureCompleteCallback = procedureCompleteCallback
         self.ioService = ioService
         self.attemptNo = 0
         self.procedureCompleteCallbackExecuted = False
-              
+
     def __notifyProcedureCompletion__(self, result):
         if result == self.Success:
             self.procedureCompleteCallback(result, self.ueCrnti, self.rrcTransactionIdentifier, 
@@ -100,7 +102,7 @@ class EnbRrcConnectionEstablishmentProcedure(object):
                 "selectedPlmnIdentity": self.ueSelectedPlmnIdentity, "dedicatedInfoNas": self.uededicatedInfoNas})
         else:
             self.procedureCompleteCallback(result, self.ueCrnti, self.rrcTransactionIdentifier)
-            
+
     def handleRrcEstablishmentMessages(self, source, interface, channelInfo, message, args=None):
         if message["messageName"] == "rrcConnectionRequest":
             # self.temporaryCrnti = channelInfo["cRnti"]
@@ -121,12 +123,12 @@ class EnbRrcConnectionEstablishmentProcedure(object):
                 self.ioService.cancelTimer('rrcConnectionSetupTimeout' + str(self.ueCrnti))
                 self.__notifyProcedureCompletion__(self.Success)
                 self.procedureCompleteCallbackExecuted = True
-    
+
     def __sendContentionResolutionIdentity__(self, messageRrcConnectionRequest):
         messageRrcConnectionRequest["messageName"] = "contentionResolutionIdentity"
         interface, channelInfo, message = contentionResolutionIdentity(self.ueCrnti, messageRrcConnectionRequest)
         self.ioService.sendMessage(self.ueAddress, interface, channelInfo, message)
-    
+
     def __sendRrcConnectionSetup__(self):
         interface, channelInfo, message = rrcConnectionSetup(self.ueCrnti, self.rrcTransactionIdentifier)
         self.attemptNo += 1
@@ -134,12 +136,12 @@ class EnbRrcConnectionEstablishmentProcedure(object):
         self.io
         self.ioService.startTimer('rrcConnectionSetupTimeout' + str(self.ueCrnti), self.rrcConnectionSetupTimeout,
             self.__onRrcConnectionSetupTimeout__)    
-    
+
     def __onRrcConnectionSetupTimeout__(self, _):
         if self.attemptNo < self.maxRrcConnectionSetupAttempts:
             self.__sendRrcConnectionSetup__()
         else:
             self.__notifyProcedureCompletion__(self.ErrorNoRRCConnectionCompleteMessage)
-            
+
     def returnRrcTransactionIdentifier(self):
         return self.rrcTransactionIdentifier

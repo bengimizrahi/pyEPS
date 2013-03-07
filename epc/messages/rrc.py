@@ -75,8 +75,8 @@ rrcConnectionSetup =  \
          {
           "messageName": "rrcConnectionSetup",
           "rrcTransactionIdentifier" : rrcTransactionIdentifier
-         } 
-) 
+         }
+)
 
 rrcConnectionSetupComplete = \
     lambda rrcTransactionIdentifier, selectedPlmnIdentity, dedicatedInfoNas: (
