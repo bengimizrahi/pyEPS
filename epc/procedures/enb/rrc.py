@@ -54,13 +54,13 @@ class RrcConnectionEstablishmentProcedure(object):
 
     def __sendContentionResolutionIdentity__(self, messageRrcConnectionRequest):
         messageRrcConnectionRequest["messageName"] = "contentionResolutionIdentity"
-        interface, channelInfo, message = contentionResolutionIdentity(self.ueCrnti, messageRrcConnectionRequest)
-        self.ioService.sendMessage(self.ueAddress, interface, channelInfo, message)
+        self.ioService.sendMessage(self.ueAddress, *contentionResolutionIdentity(
+            self.ueCrnti, messageRrcConnectionRequest))
 
     def __sendRrcConnectionSetup__(self):
-        interface, channelInfo, message = rrcConnectionSetup(self.ueCrnti, self.rrcTransactionIdentifier)
         self.attemptNo += 1
-        self.ioService.sendMessage(self.ueAddress, interface, channelInfo, message)
+        self.ioService.sendMessage(self.ueAddress,
+            *rrcConnectionSetup(self.ueCrnti, self.rrcTransactionIdentifier))
         self.rrcConnectionSetupTimer = self.ioService.createTimer(
             self.rrcConnectionSetupTimeout, self.__onRrcConnectionSetupTimeout__, self.ueCrnti)
         self.rrcConnectionSetupTimer.start()
