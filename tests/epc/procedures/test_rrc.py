@@ -13,15 +13,23 @@ class TestUe2EnbRrcEstablishment(unittest.TestCase):
         self.enbIoService.start()
         [s.start() for s in self.ueIoServices]
         self.enbProcedure = Enb(self.enbIoService)
-        self.ueProcedures = [UeRrcConnectionEstablishmentProcedure(
-            {"nasMessageType": "attachRequest"},
-            5, 0.7, 0.5, 2.0, (localhost(), 9000),
-            s, self.__procedureCompleteCallback__, {
-                "ueIdentityType": "randomValue",
-                "ueIdentityValue": 3434 * i,
-                "rrcEstablishmentCause": "moSignaling",
-                "selectedPlmnIdentity": 2801
-            }) for s in self.ueIoServices]
+        procedureParameters = {
+            "initialNasMessage": {
+             "nasMessageType": "attachRequest"
+            },
+            "maxPrachPreambleAttempts": 5,
+            "prachPreambleRepeatDelay": 0.7,
+            "macContentionResolutionTimeout": 0.5,
+            "rrcConnectionSetupTimeoutT300": 2.0
+        }
+        args = lambda i: {
+            "ueIdentityType": "randomValue",
+            "ueIdentityValue": 3434 * i,
+            "rrcEstablishmentCause": "moSignaling",
+            "selectedPlmnIdentity": 2801
+        }
+        self.ueProcedures = [UeRrcConnectionEstablishmentProcedure(procedureParameters, (localhost(), 9000),
+            s, self.__procedureCompleteCallback__, args(i)) for i, s in enumerate(self.ueIoServices)]
         self.numSuccess = 0
 
     def tearDown(self):
