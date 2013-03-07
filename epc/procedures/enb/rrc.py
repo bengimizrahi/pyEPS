@@ -14,6 +14,7 @@ class RrcConnectionEstablishmentProcedure(object):
         self.procedureCompleteCallback = procedureCompleteCallback
         self.ioService = ioService
         self.attemptNo = 0
+        self.rrcConnectionSetupTimer = None
         self.procedureCompleteCallbackExecuted = False
 
     def __notifyProcedureCompletion__(self, result):
@@ -47,7 +48,7 @@ class RrcConnectionEstablishmentProcedure(object):
             self.ueSelectedPlmnIdentity = message["selectedPlmnIdentity"]
             self.uededicatedInfoNas = message["dedicatedInfoNas"]
             if not self.procedureCompleteCallbackExecuted:
-                self.ioService.cancelTimer('rrcConnectionSetupTimeout' + str(self.ueCrnti))
+                self.rrcConnectionSetupTimer.cancel()
                 self.__notifyProcedureCompletion__(self.Success)
                 self.procedureCompleteCallbackExecuted = True
 
@@ -60,11 +61,11 @@ class RrcConnectionEstablishmentProcedure(object):
         interface, channelInfo, message = rrcConnectionSetup(self.ueCrnti, self.rrcTransactionIdentifier)
         self.attemptNo += 1
         self.ioService.sendMessage(self.ueAddress, interface, channelInfo, message)
-        self.io
-        self.ioService.startTimer('rrcConnectionSetupTimeout' + str(self.ueCrnti), self.rrcConnectionSetupTimeout,
-            self.__onRrcConnectionSetupTimeout__)    
+        self.rrcConnectionSetupTimer = self.ioService.createTimer(
+            self.rrcConnectionSetupTimeout, self.__onRrcConnectionSetupTimeout__, self.ueCrnti)
+        self.rrcConnectionSetupTimer.start()
 
-    def __onRrcConnectionSetupTimeout__(self, _):
+    def __onRrcConnectionSetupTimeout__(self, ueCrnti):
         if self.attemptNo < self.maxRrcConnectionSetupAttempts:
             self.__sendRrcConnectionSetup__()
         else:
