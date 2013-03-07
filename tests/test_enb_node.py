@@ -4,7 +4,6 @@ import time
 from epc.utils.io import IoService, localhost
 from epc.messages.rrc import rrcConnectionRequest, rrcConnectionSetupComplete
 from epc.procedures.enb.rrc import RrcConnectionEstablishmentProcedure as EnbRrcConnectionEstablishmentProcedure
-from epc.procedures.ue.rrc import RrcConnectionEstablishmentProcedure as UeRrcConnectionEstablishmentProcedure
 from epc.nodes.enb import Enb
 
 class TestEnb(unittest.TestCase):
