@@ -32,7 +32,7 @@ class TestEnbRrcConnectionProcedure(unittest.TestCase):
             "uplinkGrant": uplinkGrant, 
             "rrcTransactionIdentifier": rrcTransactionIdentifier
         })
-        time.sleep(1.7) # more than 3* 0.5 = 1.5 seconds
+        time.sleep(1.7) # more than 3 * 0.5 = 1.5 seconds
         self.assertEqual(self.enbResult,
             EnbRrcConnectionEstablishmentProcedure.ErrorNoRRCConnectionCompleteMessage)
 
