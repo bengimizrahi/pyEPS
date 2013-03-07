@@ -24,7 +24,7 @@ class RrcConnectionEstablishmentProcedure(object):
                 "ueIdentity": self.ueIdentity,
                 "rrcEstablishmentCause": self.rrcEstablishmentCause,
                 "selectedPlmnIdentity": self.ueSelectedPlmnIdentity,
-                "dedicatedInfoNas": self.uededicatedInfoNas
+                "dedicatedInfoNas": self.ueDedicatedInfoNas
             })
         else:
             self.procedureCompleteCallback(result, self.ueCrnti, self.rrcTransactionIdentifier)
@@ -48,7 +48,7 @@ class RrcConnectionEstablishmentProcedure(object):
         if message["messageName"] == "rrcConnectionSetupComplete":
             assert message["rrcTransactionIdentifier"] == self.rrcTransactionIdentifier
             self.ueSelectedPlmnIdentity = message["selectedPlmnIdentity"]
-            self.uededicatedInfoNas = message["dedicatedInfoNas"]
+            self.ueDedicatedInfoNas = message["dedicatedInfoNas"]
             if not self.procedureCompleteCallbackExecuted:
                 self.rrcConnectionSetupTimer.cancel()
                 self.__notifyProcedureCompletion__(self.Success)
