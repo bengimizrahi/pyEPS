@@ -15,7 +15,7 @@ from epc.procedures.enb.rrc import EnbRrcConnectionEstablishmentProcedure, EnbMa
 #     [remove this comment after the fix]
 from epc.messages.rrc import rrcConnectionRequest, rrcConnectionSetupComplete
 
-class Test_1_EnbRrcConnectionProcedure(unittest.TestCase):
+class TestEnbRrcConnectionProcedure(unittest.TestCase):
 
     def setUp(self):
         self.enbIoService = IoService("enb", 9000)
@@ -30,7 +30,7 @@ class Test_1_EnbRrcConnectionProcedure(unittest.TestCase):
     def __procedureEnbCompleteCallback__(self, result, a, b, args=None):
         self.enbResult = result
 
-    def test_1_noRRCConnectionSetupCompleteReceived(self):
+    def test_noRRCConnectionSetupCompleteReceived(self):
         self.enbResult = None
         temporaryCrnti = 0
         uplinkGrant = 34
@@ -43,7 +43,7 @@ class Test_1_EnbRrcConnectionProcedure(unittest.TestCase):
         self.assertEqual(self.enbResult,
             EnbRrcConnectionEstablishmentProcedure.ErrorNoRRCConnectionCompleteMessage)
 
-    def test_2_rrcConnectionEstablishmentSuccess(self):
+    def test_rrcConnectionEstablishmentSuccess(self):
         self.enbResult = None
         temporaryCrnti = 0
         uplinkGrant = 34
@@ -58,7 +58,7 @@ class Test_1_EnbRrcConnectionProcedure(unittest.TestCase):
         self.assertEqual(self.enbResult,
             EnbRrcConnectionEstablishmentProcedure.Success)
 
-    def test_3_rrcConnectionEstablishmentSuccessSubsequentRrcCompleteIgnored(self):
+    def test_rrcConnectionEstablishmentSuccessSubsequentRrcCompleteIgnored(self):
         self.enbResult = None
         temporaryCrnti = 0
         uplinkGrant = 34
@@ -77,7 +77,7 @@ class Test_1_EnbRrcConnectionProcedure(unittest.TestCase):
         time.sleep(0.2)
         self.assertEqual(self.enbResult, None)
 
-class Test_2_EnbMainProcedure(unittest.TestCase):
+class TestEnbMainProcedure(unittest.TestCase):
 
     def setUp(self):
         self.enbIoService = IoService("enb", 9000)
@@ -90,7 +90,7 @@ class Test_2_EnbMainProcedure(unittest.TestCase):
         [s.stop() for s in self.ueIoServices]
         self.enbIoService.stop()
 
-    def test1_noRRCConnectionSetupCompleteReceived(self):
+    def test_noRRCConnectionSetupCompleteReceived(self):
         temporaryCrnti = 0
         self.enbProcedure.execute()
         interface, channelInfo, message = rrcConnectionRequest(temporaryCrnti, "randomValue", 3434, "moSignaling")
@@ -98,7 +98,7 @@ class Test_2_EnbMainProcedure(unittest.TestCase):
         time.sleep(2.5) # more than 3* 0.5 = 1.5 seconds  + 0.5 seconds
         self.assertEqual(self.enbProcedure.rrcEstablishmentSuccess[temporaryCrnti], EnbRrcConnectionEstablishmentProcedure.ErrorNoRRCConnectionCompleteMessage)        
 
-    def test2_singleUeRrcEstablishmentSuccess(self):
+    def test_singleUeRrcEstablishmentSuccess(self):
         temporaryCrnti = 0
         rrcTransactionIdentifier = 0
         self.enbProcedure.execute()
@@ -112,7 +112,7 @@ class Test_2_EnbMainProcedure(unittest.TestCase):
         print "UE context information in eNB"
         print self.enbProcedure.ueContext       
 
-    def test3_twoUeRrcEstablishmentSuccess(self):
+    def test_twoUeRrcEstablishmentSuccess(self):
         self.ueResult = None
         self.enbResult = None
         self.enbProcedure.execute()
@@ -132,7 +132,7 @@ class Test_2_EnbMainProcedure(unittest.TestCase):
         print "UE context information in eNB"
         print self.enbProcedure.ueContext
 
-class Test_3_Ue2EnbRrrcEstablishment(unittest.TestCase):
+class TestUe2EnbRrrcEstablishment(unittest.TestCase):
 
     def setUp(self):
         self.enbIoService = IoService("enb", 9000)
@@ -155,7 +155,7 @@ class Test_3_Ue2EnbRrrcEstablishment(unittest.TestCase):
     def __procedureCompleteCallback__(self, result):
         self.ueresult = result
 
-    def test1_singleUeRrcEstablishmentSuccess(self):
+    def test_singleUeRrcEstablishmentSuccess(self):
         self.ueresult = None
         self.enbProcedure.execute()
         self.ueProcedures[0].execute()
@@ -165,7 +165,7 @@ class Test_3_Ue2EnbRrrcEstablishment(unittest.TestCase):
         print "UE context information in eNB"
         print self.enbProcedure.ueContext       
 
-    def test2_twoUeRrcEstablishmentSuccess(self):
+    def test_twoUeRrcEstablishmentSuccess(self):
         self.ueresult = None
         self.enbProcedure.execute()
         self.ueProcedures[0].execute()
