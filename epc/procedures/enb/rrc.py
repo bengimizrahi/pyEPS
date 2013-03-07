@@ -38,8 +38,8 @@ class RrcConnectionEstablishmentProcedure(object):
             self.__sendContentionResolutionIdentity__(message)
             time.sleep(0.2) # some delay before sending the next message
             self.__sendRrcConnectionSetup__()
-        if ( (message["messageName"] == "rrcConnectionSetupComplete") and \
-             (message["rrcTransactionIdentifier"] == self.rrcTransactionIdentifier) ):
+        if message["messageName"] == "rrcConnectionSetupComplete":
+            assert message["rrcTransactionIdentifier"] == self.rrcTransactionIdentifier
             self.ueSelectedPlmnIdentity = message["selectedPlmnIdentity"]
             self.uededicatedInfoNas = message["dedicatedInfoNas"]
             if not self.procedureCompleteCallbackExecuted:
