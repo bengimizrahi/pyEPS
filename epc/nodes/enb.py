@@ -18,9 +18,9 @@ class Enb(object):
         self.rrcEstablishmentSuccess = {}
 
     def execute(self):
-        self.ioService.addIncomingMessageCallback(self.__enbIncomingMessageCallback__)
+        self.ioService.addIncomingMessageCallback(self.__incomingMessageCallback__)
 
-    def __enbIncomingMessageCallback__(self, source, interface, channelInfo, message):
+    def __incomingMessageCallback__(self, source, interface, channelInfo, message):
         if message["messageName"] == "randomAccessRequest":
             temporaryCrnti = self.__generateTemporaryCrnti__()
             uplinkGrant = self.__generateUplinkGrant__()
@@ -31,7 +31,7 @@ class Enb(object):
             rrcTransactionIdentifier = self.__generateRrcTransactionIdentifier__()
             self.rrcTransactionIdToCrntiMapping[rrcTransactionIdentifier] = cRnti
             self.ongoingRrcEstablishmentProcedures[cRnti] = RrcConnectionEstablishmentProcedure(3, 0.5, 
-                self.ioService, self.__enbRrcProcedureCompleteCallback__)
+                self.ioService, self.__rrcProcedureCompleteCallback__)
             self.ongoingRrcEstablishmentProcedures[cRnti].handleRrcEstablishmentMessage(source, interface,
                 channelInfo, message, {"rrcTransactionIdentifier": rrcTransactionIdentifier})
         if message["messageName"] == "rrcConnectionSetupComplete":
@@ -68,7 +68,7 @@ class Enb(object):
         # bm: It is comment still valid?
         #     [remove comment after read]
 
-    def __enbRrcProcedureCompleteCallback__(self, result, cRnti, rrcTransactionIdentifier, args=None):
+    def __rrcProcedureCompleteCallback__(self, result, cRnti, rrcTransactionIdentifier, args=None):
         if result == RrcConnectionEstablishmentProcedure.Success:
             if not cRnti in self.ueContext:
                 self.ueContext[cRnti] = args
