@@ -5,7 +5,7 @@ from ...messages.rrc import contentionResolutionIdentity, rrcConnectionSetup
 
 class RrcConnectionEstablishmentProcedure(object):
 
-    Success, ErrorNoRRCConnectionCompleteMessage = range(2)
+    Success, ErrorNoRrcConnectionCompleteMessage = range(2)
 
     def __init__(self, maxRrcConnectionSetupAttempts, rrcConnectionSetupTimeout, 
                  ioService, procedureCompleteCallback):
@@ -64,7 +64,7 @@ class RrcConnectionEstablishmentProcedure(object):
         if self.attemptNo < self.maxRrcConnectionSetupAttempts:
             self.__sendRrcConnectionSetup__()
         else:
-            self.__notifyProcedureCompletion__(self.ErrorNoRRCConnectionCompleteMessage)
+            self.__notifyProcedureCompletion__(self.ErrorNoRrcConnectionCompleteMessage)
 
     def returnRrcTransactionIdentifier(self):
         return self.rrcTransactionIdentifier
