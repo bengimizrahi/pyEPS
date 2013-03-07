@@ -1,7 +1,6 @@
 import time
-import random
 
-from ...messages.rrc import randomAccessResponse, contentionResolutionIdentity, rrcConnectionSetup
+from ...messages.rrc import contentionResolutionIdentity, rrcConnectionSetup
 
 
 class RrcConnectionEstablishmentProcedure(object):
