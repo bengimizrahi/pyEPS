@@ -30,7 +30,7 @@ class EnbMain(object):
             self.numRrcEstablishmentProceduresActive += 1
             self.numRrcEstablishmentsHandled += 1
             cRnti = channelInfo["cRnti"]
-            rrcTransactionIdentifier = self.__generateRrcTrasactionIdentifier__()
+            rrcTransactionIdentifier = self.__generateRrcTransactionIdentifier__()
             self.rrcTransactionIdToCrntiMapping[rrcTransactionIdentifier] = cRnti
             # create an object to handle the rrc establishment procedure
             # bm: It is actually obvious, so I think we should remove this comment
@@ -64,7 +64,7 @@ class EnbMain(object):
         # need to create a routine to generate uplink grant
         return random.randint(100,400)
 
-    def __generateRrcTrasactionIdentifier__(self):
+    def __generateRrcTransactionIdentifier__(self):
         # need to create a routine to generate uplink grant
         self.rrcTransIdIndex += 1
         return ((self.rrcTransIdIndex - 1) % 256)
