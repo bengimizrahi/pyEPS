@@ -3,7 +3,6 @@ import time
 
 from epc.utils.io import IoService, localhost
 from epc.procedures.ue.rrc import RrcConnectionEstablishmentProcedure as UeRrcConnectionEstablishmentProcedure
-from epc.procedures.enb.rrc import RrcConnectionEstablishmentProcedure as EnbRrcConnectionEstablishmentProcedure
 from epc.nodes.enb import Enb
 
 class TestUe2EnbRrcEstablishment(unittest.TestCase):
@@ -23,35 +22,28 @@ class TestUe2EnbRrcEstablishment(unittest.TestCase):
                 "rrcEstablishmentCause": "moSignaling",
                 "selectedPlmnIdentity": 2801
             }) for s in self.ueIoServices]
+        self.numSuccess = 0
 
     def tearDown(self):
         [s.stop() for s in self.ueIoServices]
         self.enbIoService.stop()
 
     def __procedureCompleteCallback__(self, result):
-        self.ueResult = result
+        self.numSuccess += 1
 
     def test_singleUeRrcEstablishmentSuccess(self):
-        self.ueResult = None
         self.enbProcedure.execute()
         self.ueProcedures[0].execute()
         time.sleep(3)
-        self.assertEqual(self.enbProcedure.rrcEstablishmentSuccess[0], EnbRrcConnectionEstablishmentProcedure.Success)        
-        self.assertEqual(self.ueResult, UeRrcConnectionEstablishmentProcedure.Success)
+        self.assertEqual(self.numSuccess, 1)
         print "UE context information in eNB"
         print self.enbProcedure.ueContext       
 
     def test_twoUeRrcEstablishmentSuccess(self):
-        self.ueResult = None
         self.enbProcedure.execute()
-        self.ueProcedures[0].execute()
-        time.sleep(0.6)  # MOTE: This test fails dues to timer error if sleep is less than this value
-        # Exception: No running timer named 'randomAccessResponseTimeout' found
-        self.ueProcedures[1].execute()
+        [p.execute() for p in self.ueProcedures]
         time.sleep(3)
-        self.assertEqual(self.enbProcedure.rrcEstablishmentSuccess[0], EnbRrcConnectionEstablishmentProcedure.Success)        
-        self.assertEqual(self.enbProcedure.rrcEstablishmentSuccess[1], EnbRrcConnectionEstablishmentProcedure.Success)        
-        self.assertEqual(self.ueResult, UeRrcConnectionEstablishmentProcedure.Success)
+        self.assertEqual(self.numSuccess, 2)
         print "UE context information in eNB"
         print self.enbProcedure.ueContext       
 

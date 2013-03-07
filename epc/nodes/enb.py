@@ -16,7 +16,6 @@ class Enb(object):
         self.rrcTransactionIdToCrntiMapping = {}
         self.rrcTransIdIndex = 0
         self.cRntiIndex = 0
-        self.rrcEstablishmentSuccess = {}
         self.kpis = Counter(
             numRandomAccessRequestsReceived = 0,
             numRrcConnectionRequestsReceived = 0,
@@ -85,4 +84,3 @@ class Enb(object):
         time.sleep(0.5) # wait for another RRC complete if outstanding
         del self.rrcTransactionIdToCrntiMapping[rrcTransactionIdentifier]
         del self.ongoingRrcEstablishmentProcedures[cRnti]
-        self.rrcEstablishmentSuccess[cRnti] = result
