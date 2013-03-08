@@ -6,6 +6,7 @@ from epc.messages.rrc import rrcConnectionRequest, rrcConnectionSetupComplete
 from epc.procedures.enb.rrc import RrcConnectionEstablishmentProcedure as EnbRrcConnectionEstablishmentProcedure
 from epc.nodes.enb import Enb
 
+
 class TestEnb(unittest.TestCase):
 
     def setUp(self):

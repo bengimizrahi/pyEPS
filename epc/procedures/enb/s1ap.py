@@ -1,5 +1,6 @@
 from ...messages.s1ap import s1SetupRequest
 
+
 class S1SetupProcedure(object):
 
     (ProgressSuccess, ProgressWaitForNextAttempt, ProgressFailedWithCauseUnknownPlmn,
