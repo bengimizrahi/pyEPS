@@ -33,29 +33,28 @@ class S1SetupProcedure(object):
         self.__sendS1SetupRequest__()
 
     def __incomingMessageCallback__(self, source, interface, channelInfo, message):
+        def handleS1SetupResponse(self, s1SetupResponse):
+            # Assume S1 Setup Response is processed successfully
+            s1SetupResponseParameters = {}
+            self.procedureProgressCallback(self.ProgressSuccess, s1SetupResponseParameters)
+
+        def handleS1SetupFailure(self, s1SetupFailure):
+            assert not s1SetupFailure["criticalityDiagnostics"], \
+                "Don't know how to handle CriticalityDiagnostics IE in an S1 Setup Failure"
+            timeToWait = s1SetupFailure["timeToWait"]
+            if timeToWait:
+                self.waitForNextAttemptTimer = self.ioService.createTimer(timeToWait, self.__resendS1SetupRequest__)
+                self.waitForNextAttemptTimer.start()
+                self.procedureProgressCallback(self.ProgressWaitForNextAttempt)
+                return
+            progress = (s1SetupFailure["cause"] == "unknownPlmn" and self.ProgressFailedWithCauseUnknownPlmn or
+                self.ProgressFailedWithCauseUnspecified)
+            self.__notifyProcedureProgress__(progress)
         mapping = {
-            ("s1Setup", "successfulOutcome"): self.__handleS1SetupResponse__,
-            ("s1Setup", "unsuccessfulOutcome"): self.__handleS1SetupFailure__,
+            ("s1Setup", "successfulOutcome"): self.handleS1SetupResponse,
+            ("s1Setup", "unsuccessfulOutcome"): self.handleS1SetupFailure,
         }
         procedureCode = message["messageType"]["procedureCode"]
         typeOfMessage = message["messageType"]["typeOfMessage"]
         assert mapping.get((procedureCode, typeOfMessage), "Cannot handle message: {}".format(message))
         mapping[procedureCode, typeOfMessage](message)
-
-    def __handleS1SetupResponse__(self, s1SetupResponse):
-        # Assume S1 Setup Response is processed successfully
-        s1SetupResponseParameters = {}
-        self.procedureProgressCallback(self.ProgressSuccess, s1SetupResponseParameters)
-
-    def __handleS1SetupFailure__(self, s1SetupFailure):
-        assert not s1SetupFailure["criticalityDiagnostics"], \
-            "Don't know how to handle CriticalityDiagnostics IE in an S1 Setup Failure"
-        timeToWait = s1SetupFailure["timeToWait"]
-        if timeToWait:
-            self.waitForNextAttemptTimer = self.ioService.createTimer(timeToWait, self.__resendS1SetupRequest__)
-            self.waitForNextAttemptTimer.start()
-            self.procedureProgressCallback(self.ProgressWaitForNextAttempt)
-            return
-        progress = (s1SetupFailure["cause"] == "unknownPlmn" and self.ProgressFailedWithCauseUnknownPlmn or
-            self.ProgressFailedWithCauseUnspecified)
-        self.__notifyProcedureProgress__(progress)
