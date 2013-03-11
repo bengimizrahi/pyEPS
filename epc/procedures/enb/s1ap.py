@@ -34,12 +34,12 @@ class S1SetupProcedure(object):
         self.__sendS1SetupRequest__()
 
     def __incomingMessageCallback__(self, source, interface, channelInfo, message):
-        def handleS1SetupResponse(self, s1SetupResponse):
+        def handleS1SetupResponse(s1SetupResponse):
             # Assume S1 Setup Response is processed successfully
             s1SetupResponseParameters = {}
             self.procedureProgressCallback(self.ProgressSuccess, s1SetupResponseParameters)
 
-        def handleS1SetupFailure(self, s1SetupFailure):
+        def handleS1SetupFailure(s1SetupFailure):
             assert not s1SetupFailure["criticalityDiagnostics"], \
                 "Don't know how to handle CriticalityDiagnostics IE in an S1 Setup Failure"
             timeToWait = s1SetupFailure["timeToWait"]
@@ -52,8 +52,8 @@ class S1SetupProcedure(object):
                 self.ProgressFailedWithCauseUnspecified)
             self.__notifyProcedureProgress__(progress)
         mapping = {
-            ("s1Setup", "successfulOutcome"): self.handleS1SetupResponse,
-            ("s1Setup", "unsuccessfulOutcome"): self.handleS1SetupFailure,
+            ("s1Setup", "successfulOutcome"): handleS1SetupResponse,
+            ("s1Setup", "unsuccessfulOutcome"): handleS1SetupFailure,
         }
         procedureCode = message["messageType"]["procedureCode"]
         typeOfMessage = message["messageType"]["typeOfMessage"]
