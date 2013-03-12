@@ -170,8 +170,10 @@ class TestBulkMessages(unittest.TestCase):
             self.ioservices[1].sendMessage("0", interface, channelInfo, message)
 
         n = 1000
+        delayInBetween = 0.1e-4
         [s.addIncomingMessageCallback(cb) for s, cb in zip(self.ioservices, (onIncomingMessage0, onIncomingMessage1))]
         for _ in range(n):
+            time.sleep(delayInBetween)
             self.ioservices[0].sendMessage((localhost(), 9001), "udp", None, {"someKey": "someValue"})
         time.sleep(1.0)
         self.assertEqual(self.numSuccess, n)
