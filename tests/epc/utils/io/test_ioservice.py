@@ -148,8 +148,34 @@ class TestIoService(unittest.TestCase):
         with self.assertRaises(Exception):
             [s.start() for s in self.ioservices]
             self.ioservices[0].sendMessage(("1", "interface", "channelInfo", {"key": "value"}))
+
     def tearDown(self):
         [s.stop() for s in self.ioservices]
+
+class TestBulkMessages(unittest.TestCase):
+
+    def setUp(self):
+        self.ioservices = [IoService(str(i), 9000 + i) for i in range(2)]
+        [s.start() for s in self.ioservices]
+        self.numSuccess = 0
+
+    def tearDown(self):
+        [s.stop() for s in self.ioservices]
+
+    def test_bulkMessages(self):
+        def onIncomingMessage0(source, interface, channelInfo, message):
+            self.numSuccess += 1
+
+        def onIncomingMessage1(source, interface, channelInfo, message):
+            self.ioservices[1].sendMessage("0", interface, channelInfo, message)
+
+        n = 1000
+        [s.addIncomingMessageCallback(cb) for s, cb in zip(self.ioservices, (onIncomingMessage0, onIncomingMessage1))]
+        for _ in range(n):
+            self.ioservices[0].sendMessage((localhost(), 9001), "udp", None, {"someKey": "someValue"})
+        time.sleep(1.0)
+        self.assertEqual(self.numSuccess, n)
+
 
 if __name__ == '__main__':
     unittest.main()
