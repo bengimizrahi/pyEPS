@@ -24,7 +24,7 @@ class TestUe2EnbRrcEstablishment(unittest.TestCase):
         }
         args = lambda i: {
             "ueIdentityType": "randomValue",
-            "ueIdentityValue": 3434 * i,
+            "ueIdentityValue": 3434 + i,
             "rrcEstablishmentCause": "moSignaling",
             "selectedPlmnIdentity": 2801
         }
