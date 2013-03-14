@@ -23,6 +23,11 @@ class Enb(object):
 
     def __handleIncomingMessage__(self, source, interface, channelInfo, message):
         messageName = message["messageName"]
-        if messageName in RRC_CONNECTION_SETUP_ESTABLISHMENT_PROCEDURE_MESSAGES:
-            self.rrcConnectionEstablishmentProcedureHandler.handleIncomingMessage(
-                source, interface, channelInfo, message)
+        mapping = (
+            (RRC_CONNECTION_SETUP_ESTABLISHMENT_PROCEDURE_MESSAGES, self.rrcConnectionEstablishmentProcedureHandler.handleIncomingMessage),
+        )
+        for messageNames, handler in mapping:
+            if messageName in messageNames:
+                handler(source, interface, channelInfo, message)
+                return
+        assert "Unhandled message: {}".format((source, interface, channelInfo, message))
