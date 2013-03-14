@@ -36,7 +36,6 @@ class RrcConnectionEstablishmentProcedure(object):
         if message["messageName"] == "rrcConnectionRequest":
             self.rrcTransactionIdentifier = args["rrcTransactionIdentifier"]        
             self.ueAddress = source
-            self.procedureCompleteCallbackExecuted = False             
             self.ueCrnti = channelInfo["cRnti"]
             self.ueIdentity = message["ueIdentity"]
             self.rrcEstablishmentCause = message["rrcEstablishmentCause"]
