@@ -16,7 +16,7 @@ class TestEnbRrcConnectionEstablishment(unittest.TestCase):
         self.enb = Enb("enb", 9000)
         self.handler = self.enb.rrcConnectionEstablishmentProcedureHandler
         self.enb.execute()
-        self.numUes = 5
+        self.numUes = 20
         self.ueIoServices = [IoService(str(i), 9001 + i) for i in range(self.numUes)]
         [s.start() for s in self.ueIoServices]
 
@@ -24,14 +24,12 @@ class TestEnbRrcConnectionEstablishment(unittest.TestCase):
         self.enb.terminate()
         [s.stop() for s in self.ueIoServices]
 
-    @unittest.skip("temp")
     def test_noRrcConnectionSetupCompleteReceived(self):
         temporaryCrnti = 0
         self.ueIoServices[0].sendMessage((localhost(), 9000), *rrcConnectionRequest(temporaryCrnti, "randomValue", 3434, "moSignaling"))
         time.sleep(2.5) # more than 3* 0.5 = 1.5 seconds  + 0.5 seconds
         self.assertEqual(self.handler.kpis["numRrcConnectionEstablishmentFailures"], 1)
 
-    @unittest.skip("temp")
     def test_singleUeRrcEstablishmentSuccess(self):
         temporaryCrnti = 0
         rrcTransactionIdentifier = 0
@@ -39,7 +37,7 @@ class TestEnbRrcConnectionEstablishment(unittest.TestCase):
             temporaryCrnti, "randomValue", 3434, "moSignaling"))
         self.ueIoServices[0].sendMessage((localhost(), 9000), *rrcConnectionSetupComplete(
             rrcTransactionIdentifier, 28001, {"nasMessageType": "attachRequest"}))
-        time.sleep(1.0) # ensure the enb call back is not waiting for rrc complete
+        time.sleep(0.1) # ensure the enb call back is not waiting for rrc complete
         self.assertEqual(self.handler.kpis["numRrcConnectionEstablishmentSuccesses"], 1)
 
     def test_nUeRrcEstablishmentSuccess(self):
@@ -49,7 +47,7 @@ class TestEnbRrcConnectionEstablishment(unittest.TestCase):
         [s.sendMessage((localhost(), 9000), *rrcConnectionSetupComplete(
                 rrcTransactionIdentifier, 28001, {"nasMessageType": "attachRequest"})
             ) for rrcTransactionIdentifier, s in enumerate(self.ueIoServices)]
-        time.sleep(5.0)
+        time.sleep(0.1)
         self.assertEqual(len(self.enb.ues), self.numUes)
 
 
