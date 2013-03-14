@@ -19,7 +19,7 @@ class Enb(object):
         self.ioService.stop()
 
     def __handleNewRrcConnectionEstablishment__(self, cRnti, args):
-        self.ues[cRnti] = args
+        self.ues[cRnti] = UeContext(cRnti, **args)
 
     def __handleIncomingMessage__(self, source, interface, channelInfo, message):
         messageName = message["messageName"]
@@ -31,3 +31,12 @@ class Enb(object):
                 handler(source, interface, channelInfo, message)
                 return
         assert "Unhandled message: {}".format((source, interface, channelInfo, message))
+
+
+class UeContext(object):
+
+    def __init__(self, cRnti, ueIdentity, rrcEstablishmentCause, selectedPlmnIdentity):
+        self.cRnti = cRnti
+        self.ueIdentity = ueIdentity
+        self.rrcEstablishmentCause = rrcEstablishmentCause
+        self.selectedPlmnIdentity = selectedPlmnIdentity
