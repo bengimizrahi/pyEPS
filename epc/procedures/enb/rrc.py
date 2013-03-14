@@ -21,8 +21,8 @@ class RrcConnectionEstablishmentProcedure(object):
 
     def __notifyProcedureCompletion__(self, result):
         if result == self.Success:
-            self.procedureCompleteCallback(result, self.ueCrnti, self.rrcTransactionIdentifier, {
-                "cRnti": self.ueCrnti,
+            self.procedureCompleteCallback(result, self.cRnti, self.rrcTransactionIdentifier, {
+                "cRnti": self.cRnti,
                 "rrcTransactionIdentifier": self.rrcTransactionIdentifier,
                 "ueIdentity": self.ueIdentity,
                 "rrcEstablishmentCause": self.rrcEstablishmentCause,
@@ -30,13 +30,13 @@ class RrcConnectionEstablishmentProcedure(object):
                 "dedicatedInfoNas": self.ueDedicatedInfoNas
             })
         else:
-            self.procedureCompleteCallback(result, self.ueCrnti, self.rrcTransactionIdentifier)
+            self.procedureCompleteCallback(result, self.cRnti, self.rrcTransactionIdentifier)
 
     def handleRrcEstablishmentMessage(self, source, interface, channelInfo, message, args=None):
         if message["messageName"] == "rrcConnectionRequest":
             self.rrcTransactionIdentifier = args["rrcTransactionIdentifier"]        
             self.ueAddress = source
-            self.ueCrnti = channelInfo["cRnti"]
+            self.cRnti = channelInfo["cRnti"]
             self.ueIdentity = message["ueIdentity"]
             self.rrcEstablishmentCause = message["rrcEstablishmentCause"]
             self.__sendContentionResolutionIdentity__(message)
@@ -53,12 +53,12 @@ class RrcConnectionEstablishmentProcedure(object):
     def __sendContentionResolutionIdentity__(self, messageRrcConnectionRequest):
         messageRrcConnectionRequest["messageName"] = "contentionResolutionIdentity"
         self.ioService.sendMessage(self.ueAddress, *contentionResolutionIdentity(
-            self.ueCrnti, messageRrcConnectionRequest))
+            self.cRnti, messageRrcConnectionRequest))
 
     def __sendRrcConnectionSetup__(self):
         self.attemptNo += 1
         self.ioService.sendMessage(self.ueAddress,
-            *rrcConnectionSetup(self.ueCrnti, self.rrcTransactionIdentifier))
+            *rrcConnectionSetup(self.cRnti, self.rrcTransactionIdentifier))
         self.rrcConnectionSetupTimer = self.ioService.createTimer(
             self.rrcConnectionSetupTimeout, self.__onRrcConnectionSetupTimeout__)
         self.rrcConnectionSetupTimer.start()
