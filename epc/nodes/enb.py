@@ -1,4 +1,5 @@
 from ..utils.io import IoService
+from ..messages.rrc import RRC_CONNECTION_SETUP_ESTABLISHMENT_PROCEDURE_MESSAGES
 from ..procedures.enb.rrc import RrcConnectionEstablishmentProcedureHandler
 
 
@@ -23,6 +24,6 @@ class Enb(object):
 
     def __handleIncomingMessage__(self, source, interface, channelInfo, message):
         messageName = message["messageName"]
-        if messageName in ("randomAccessRequest", "rrcConnectionRequest", "rrcConnectionSetupComplete"):
+        if messageName in RRC_CONNECTION_SETUP_ESTABLISHMENT_PROCEDURE_MESSAGES:
             self.rrcConnectionEstablishmentProcedureHandler.handleIncomingMessage(
                 source, interface, channelInfo, message)
