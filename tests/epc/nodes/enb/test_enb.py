@@ -3,61 +3,52 @@ import time
 
 from epc.utils.io import IoService, localhost
 from epc.messages.rrc import rrcConnectionRequest, rrcConnectionSetupComplete
-from epc.procedures.enb.rrc import RrcConnectionEstablishmentProcedure as EnbRrcConnectionEstablishmentProcedure
 from epc.nodes.enb import Enb
 
+import logging
+msgTraceLogger = logging.getLogger("msgTrace")
+msgTraceLogger.addHandler(logging.StreamHandler())
+#msgTraceLogger.setLevel(logging.DEBUG)
 
-class TestEnb(unittest.TestCase):
+class TestEnbRrcConnectionEstablishment(unittest.TestCase):
 
     def setUp(self):
-        self.enbIoService = IoService("enb", 9000)
-        self.ueIoServices = [IoService(str(i), 9001 + i) for i in range(20)]
-        self.enbIoService.start()
+        self.enb = Enb("enb", 9000)
+        self.handler = self.enb.rrcConnectionEstablishmentProcedureHandler
+        self.enb.execute()
+        self.numUes = 20
+        self.ueIoServices = [IoService(str(i), 9001 + i) for i in range(self.numUes)]
         [s.start() for s in self.ueIoServices]
-        self.enb = Enb(self.enbIoService)
 
     def tearDown(self):
+        self.enb.terminate()
         [s.stop() for s in self.ueIoServices]
-        self.enbIoService.stop()
 
     def test_noRrcConnectionSetupCompleteReceived(self):
         temporaryCrnti = 0
-        self.enb.execute()
         self.ueIoServices[0].sendMessage((localhost(), 9000), *rrcConnectionRequest(temporaryCrnti, "randomValue", 3434, "moSignaling"))
         time.sleep(2.5) # more than 3* 0.5 = 1.5 seconds  + 0.5 seconds
-        self.assertEqual(self.enb.kpis["numRrcConnectionEstablishmentFailures"], 1)
+        self.assertEqual(self.handler.kpis["numRrcConnectionEstablishmentFailures"], 1)
 
     def test_singleUeRrcEstablishmentSuccess(self):
         temporaryCrnti = 0
         rrcTransactionIdentifier = 0
-        self.enb.execute()
         self.ueIoServices[0].sendMessage((localhost(), 9000), *rrcConnectionRequest(
             temporaryCrnti, "randomValue", 3434, "moSignaling"))
         self.ueIoServices[0].sendMessage((localhost(), 9000), *rrcConnectionSetupComplete(
             rrcTransactionIdentifier, 28001, {"nasMessageType": "attachRequest"}))
-        time.sleep(1.0) # ensure the enb call back is not waiting for rrc complete
-        self.assertEqual(self.enb.kpis["numRrcConnectionEstablishmentSuccesses"], 1)
-        print "UE context information in eNB"
-        print self.enb.ueContext
+        time.sleep(0.1) # ensure the enb call back is not waiting for rrc complete
+        self.assertEqual(self.handler.kpis["numRrcConnectionEstablishmentSuccesses"], 1)
 
-    def test_twoUeRrcEstablishmentSuccess(self):
-        self.enb.execute()
+    def test_nUeRrcEstablishmentSuccess(self):
         [s.sendMessage((localhost(), 9000), *rrcConnectionRequest(
-            i, "randomValue", 3434, "moSignaling")) for i, s in enumerate(self.ueIoServices)]
-        for i in range(2):
-            self.ueIoServices[0]
-            time.sleep(0.5)
-        time.sleep(0.2)
-        for i in range(2):
-            interface, channelInfo, message = rrcConnectionSetupComplete(i, 28001, 
-                                                                     {"nasMessageType": "attachRequest"})
-            self.ueIoServices[i].sendMessage((localhost(), 9000), interface, channelInfo, message)
-            time.sleep(0.2)
-        time.sleep(1.0) # ensure the enb call back is not waiting for rrc complete
-        self.assertEqual(self.enb.rrcEstablishmentSuccess[0], EnbRrcConnectionEstablishmentProcedure.Success)
-        self.assertEqual(self.enb.rrcEstablishmentSuccess[1], EnbRrcConnectionEstablishmentProcedure.Success)
-        print "UE context information in eNB"
-        print self.enbProcedure.ueContext
+                temporaryCrnti, "randomValue", 3434, "moSignaling")
+            ) for temporaryCrnti, s in enumerate(self.ueIoServices)]
+        [s.sendMessage((localhost(), 9000), *rrcConnectionSetupComplete(
+                rrcTransactionIdentifier, 28001, {"nasMessageType": "attachRequest"})
+            ) for rrcTransactionIdentifier, s in enumerate(self.ueIoServices)]
+        time.sleep(0.1)
+        self.assertEqual(len(self.enb.ues), self.numUes)
 
 
 if __name__ == "__main__":
