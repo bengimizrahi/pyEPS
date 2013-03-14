@@ -40,9 +40,6 @@ class RrcConnectionEstablishmentProcedure(object):
             self.ueIdentity = message["ueIdentity"]
             self.rrcEstablishmentCause = message["rrcEstablishmentCause"]
             self.__sendContentionResolutionIdentity__(message)
-            time.sleep(0.2) # some delay before sending the next message
-            # bm: Why is this 0.2sec delay important?
-            #     [remove bm's comment after read]
             self.__sendRrcConnectionSetup__()
         if message["messageName"] == "rrcConnectionSetupComplete":
             assert message["rrcTransactionIdentifier"] == self.rrcTransactionIdentifier
