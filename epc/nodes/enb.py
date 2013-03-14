@@ -18,12 +18,16 @@ class Enb(object):
     def terminate(self):
         self.ioService.stop()
 
-    def __handleNewRrcConnectionEstablishment__(self, parameters):
-        cRnti = parameters["cRnti"]
-        self.ues[cRnti] = parameters
+    def __handleNewRrcConnectionEstablishment__(self, cRnti, args):
+        self.ues[cRnti] = args
 
     def __handleIncomingMessage__(self, source, interface, channelInfo, message):
         messageName = message["messageName"]
-        if messageName in RRC_CONNECTION_SETUP_ESTABLISHMENT_PROCEDURE_MESSAGES:
-            self.rrcConnectionEstablishmentProcedureHandler.handleIncomingMessage(
-                source, interface, channelInfo, message)
+        mapping = (
+            (RRC_CONNECTION_SETUP_ESTABLISHMENT_PROCEDURE_MESSAGES, self.rrcConnectionEstablishmentProcedureHandler.handleIncomingMessage),
+        )
+        for messageNames, handler in mapping:
+            if messageName in messageNames:
+                handler(source, interface, channelInfo, message)
+                return
+        assert "Unhandled message: {}".format((source, interface, channelInfo, message))

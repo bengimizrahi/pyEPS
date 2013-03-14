@@ -1,4 +1,3 @@
-import time
 import random
 from collections import Counter
 
@@ -21,30 +20,28 @@ class RrcConnectionEstablishmentProcedure(object):
 
     def __notifyProcedureCompletion__(self, result):
         if result == self.Success:
-            self.procedureCompleteCallback(result, self.ueCrnti, self.rrcTransactionIdentifier, {
-                "cRnti": self.ueCrnti,
-                "rrcTransactionIdentifier": self.rrcTransactionIdentifier,
+            self.procedureCompleteCallback(result, self.cRnti, self.rrcTransactionIdentifier, {
                 "ueIdentity": self.ueIdentity,
                 "rrcEstablishmentCause": self.rrcEstablishmentCause,
-                "selectedPlmnIdentity": self.ueSelectedPlmnIdentity,
-                "dedicatedInfoNas": self.ueDedicatedInfoNas
+                "selectedPlmnIdentity": self.selectedPlmnIdentity,
+                "dedicatedInfoNas": self.dedicatedInfoNas
             })
         else:
-            self.procedureCompleteCallback(result, self.ueCrnti, self.rrcTransactionIdentifier)
+            self.procedureCompleteCallback(result, self.cRnti, self.rrcTransactionIdentifier)
 
     def handleRrcEstablishmentMessage(self, source, interface, channelInfo, message, args=None):
         if message["messageName"] == "rrcConnectionRequest":
             self.rrcTransactionIdentifier = args["rrcTransactionIdentifier"]        
             self.ueAddress = source
-            self.ueCrnti = channelInfo["cRnti"]
+            self.cRnti = channelInfo["cRnti"]
             self.ueIdentity = message["ueIdentity"]
             self.rrcEstablishmentCause = message["rrcEstablishmentCause"]
             self.__sendContentionResolutionIdentity__(message)
             self.__sendRrcConnectionSetup__()
         if message["messageName"] == "rrcConnectionSetupComplete":
             assert message["rrcTransactionIdentifier"] == self.rrcTransactionIdentifier
-            self.ueSelectedPlmnIdentity = message["selectedPlmnIdentity"]
-            self.ueDedicatedInfoNas = message["dedicatedInfoNas"]
+            self.selectedPlmnIdentity = message["selectedPlmnIdentity"]
+            self.dedicatedInfoNas = message["dedicatedInfoNas"]
             if not self.procedureCompleteCallbackExecuted:
                 self.rrcConnectionSetupTimer.cancel()
                 self.__notifyProcedureCompletion__(self.Success)
@@ -53,12 +50,12 @@ class RrcConnectionEstablishmentProcedure(object):
     def __sendContentionResolutionIdentity__(self, messageRrcConnectionRequest):
         messageRrcConnectionRequest["messageName"] = "contentionResolutionIdentity"
         self.ioService.sendMessage(self.ueAddress, *contentionResolutionIdentity(
-            self.ueCrnti, messageRrcConnectionRequest))
+            self.cRnti, messageRrcConnectionRequest))
 
     def __sendRrcConnectionSetup__(self):
         self.attemptNo += 1
         self.ioService.sendMessage(self.ueAddress,
-            *rrcConnectionSetup(self.ueCrnti, self.rrcTransactionIdentifier))
+            *rrcConnectionSetup(self.cRnti, self.rrcTransactionIdentifier))
         self.rrcConnectionSetupTimer = self.ioService.createTimer(
             self.rrcConnectionSetupTimeout, self.__onRrcConnectionSetupTimeout__)
         self.rrcConnectionSetupTimer.start()
@@ -118,7 +115,7 @@ class RrcConnectionEstablishmentProcedureHandler(object):
             "numRrcConnectionEstablishmentSuccesses" or "numRrcConnectionEstablishmentFailures")
         self.kpis[kpiName] += 1
         if result == RrcConnectionEstablishmentProcedure.Success:
-            self.newRrcConnectionEstablishmentCallback(args)
+            self.newRrcConnectionEstablishmentCallback(cRnti, args)
         del self.rrcTransactionIdToCrntiMapping[rrcTransactionIdentifier]
         del self.ongoingRrcEstablishmentProcedures[cRnti]
 
