@@ -94,11 +94,9 @@ class RrcConnectionEstablishmentProcedureHandler(object):
             numRrcConnectionEstablishmentSuccesses = 0
         )
 
-    def __sendRandomAccessResponse__(self, receivedSource, receivedInterface,
-            receivedChannelInfo, receivedMessage, temporaryCrnti, uplinkGrant):
-        raRnti = receivedChannelInfo["raRnti"]
-        rapid = receivedMessage["rapid"]
-        self.ioService.sendMessage(receivedSource, *randomAccessResponse(
+    def __sendRandomAccessResponse__(self, destination, raRnti, rapid,
+            temporaryCrnti, uplinkGrant):
+        self.ioService.sendMessage(destination, *randomAccessResponse(
             raRnti, rapid, temporaryCrnti, uplinkGrant))
 
     def __generateTemporaryCrnti__(self):
@@ -129,7 +127,9 @@ class RrcConnectionEstablishmentProcedureHandler(object):
             self.kpis["numRandomAccessRequestsReceived"] += 1
             temporaryCrnti = self.__generateTemporaryCrnti__()
             uplinkGrant = self.__generateUplinkGrant__()
-            self.__sendRandomAccessResponse__(source, interface, channelInfo, message, temporaryCrnti, uplinkGrant)
+            raRnti = channelInfo["raRnti"]
+            rapid = message["rapid"]
+            self.__sendRandomAccessResponse__(source, raRnti, rapid, temporaryCrnti, uplinkGrant)
         if message["messageName"] == "rrcConnectionRequest":
             self.kpis["numRrcConnectionRequestsReceived"] += 1
             cRnti = channelInfo["cRnti"]
