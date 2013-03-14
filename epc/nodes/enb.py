@@ -18,9 +18,8 @@ class Enb(object):
     def terminate(self):
         self.ioService.stop()
 
-    def __handleNewRrcConnectionEstablishment__(self, parameters):
-        cRnti = parameters["cRnti"]
-        self.ues[cRnti] = parameters
+    def __handleNewRrcConnectionEstablishment__(self, cRnti, args):
+        self.ues[cRnti] = args
 
     def __handleIncomingMessage__(self, source, interface, channelInfo, message):
         messageName = message["messageName"]

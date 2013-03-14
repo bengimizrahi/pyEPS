@@ -21,8 +21,6 @@ class RrcConnectionEstablishmentProcedure(object):
     def __notifyProcedureCompletion__(self, result):
         if result == self.Success:
             self.procedureCompleteCallback(result, self.cRnti, self.rrcTransactionIdentifier, {
-                "cRnti": self.cRnti,
-                "rrcTransactionIdentifier": self.rrcTransactionIdentifier,
                 "ueIdentity": self.ueIdentity,
                 "rrcEstablishmentCause": self.rrcEstablishmentCause,
                 "selectedPlmnIdentity": self.selectedPlmnIdentity,
@@ -117,7 +115,7 @@ class RrcConnectionEstablishmentProcedureHandler(object):
             "numRrcConnectionEstablishmentSuccesses" or "numRrcConnectionEstablishmentFailures")
         self.kpis[kpiName] += 1
         if result == RrcConnectionEstablishmentProcedure.Success:
-            self.newRrcConnectionEstablishmentCallback(args)
+            self.newRrcConnectionEstablishmentCallback(cRnti, args)
         del self.rrcTransactionIdToCrntiMapping[rrcTransactionIdentifier]
         del self.ongoingRrcEstablishmentProcedures[cRnti]
 
