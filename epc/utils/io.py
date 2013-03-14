@@ -21,9 +21,13 @@ class IoService(object):
         self.name = name
         self.udpPort = udpPort
         self.eventQueue = Queue()
-        self.alive = False
+        self.alive, self.stopped = False, False
         self.incomingMessageCallback = []
         self.timers = {}
+
+    def __repr__(self):
+        return "{}({}, {}, alive={}, stopped={})".format(
+            self.__class__.__name__, self.name, self.udpPort, self.alive, self.stopped)
 
     def addIncomingMessageCallback(self, callback):
         self.incomingMessageCallback.append(callback)
@@ -38,23 +42,29 @@ class IoService(object):
         [t.start() for t in (self.ioHandlerThread, self.callbackHandlerThread)]
 
     def stop(self):
+        if self.stopped:
+            raise RuntimeError("{} already stopped".format(self))
         if not self.alive:
-            raise RuntimeError("Thread not started")
-        self.alive = False
+            raise RuntimeError("{} not started".format(self))
+        self.alive, self.stopped = False, True
         self.eventQueue.put(("STOP", None))
         [t.join() for t in (self.ioHandlerThread, self.callbackHandlerThread)]
     
     def createTimer(self, duration, callback, *args, **kwargs):
+        if self.stopped:
+            raise RuntimeError("{} already stopped".format(self))
         if not self.alive:
-            raise RuntimeError("Thread not started")
+            raise RuntimeError("{} not started".format(self))
         return threading.Timer(duration, self.__onTimerExpiration__, args=[callback, args, kwargs])
     
     def __onTimerExpiration__(self, callback, args, kwargs):
         self.eventQueue.put(("TIMEOUT", (callback, args, kwargs)))
     
     def sendMessage(self, destination, interface, channelInfo, message):
+        if self.stopped:
+            raise RuntimeError("{} already stopped".format(self))
         if not self.alive:
-            raise RuntimeError("Thread not started")
+            raise RuntimeError("{} not started".format(self))
         def snd(message, addr):
             packet = {
                 "source": self.name,
@@ -92,7 +102,7 @@ class IoService(object):
             except SyntaxError:
                 assertionLogger.error("eval({}) raised SyntaxError, ignoring message...".format(msg))
                 continue
-            msgTraceLogger.info("Incoming packet: {}".format(packet))
+            msgTraceLogger.info("Incoming packet to IoService({}, {}): {}".format(self.name, self.udpPort, packet))
             source = packet["source"]
             if not self.peers.get(source):
                 self.peers[source] = addr
