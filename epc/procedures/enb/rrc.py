@@ -34,9 +34,6 @@ class RrcConnectionEstablishmentProcedure(object):
 
     def handleRrcEstablishmentMessage(self, source, interface, channelInfo, message, args=None):
         if message["messageName"] == "rrcConnectionRequest":
-            # self.temporaryCrnti = channelInfo["cRnti"]
-            # bm: does this comment still make sense?
-            #     [remove bm's comment if so]
             self.rrcTransactionIdentifier = args["rrcTransactionIdentifier"]        
             self.ueAddress = source
             self.procedureCompleteCallbackExecuted = False             
