@@ -1,7 +1,7 @@
 import random
 
-from ...messages.rrc import randomAccessRequest, rrcConnectionRequest, rrcConnectionSetupComplete
-
+from ...messages.rrc import rrcConnectionRequest, rrcConnectionSetupComplete
+from ...messages.mac import randomAccessPreamble
 
 class RrcConnectionEstablishmentProcedure(object):
 
@@ -62,8 +62,7 @@ class RrcConnectionEstablishmentProcedure(object):
                 self.__sendRrcConnectionRequest__()
         elif message["messageType"] == "contentionResolutionIdentity":
             # need to check here if the message content is the same as that send in rrc connection request
-            message["messageType"] = self.rrcConnectionRequestMessage["messageType"]
-            if message == self.rrcConnectionRequestMessage:
+            if message["echoedMessage"] == self.rrcConnectionRequestMessage:
                 self.waitForMacContentionResolutionTimer.cancel()
         elif message["messageType"] == "rrcConnectionSetup":
             if channelInfo["puschScramblingInput"] == self.temporaryCrnti:
@@ -76,7 +75,7 @@ class RrcConnectionEstablishmentProcedure(object):
     
     def __sendPrachPreamble__(self):
         self.attemptNo += 1
-        self.ioService.sendMessage(self.enbAddress, *randomAccessRequest(self.raRnti, self.rapid))
+        self.ioService.sendMessage(self.enbAddress, *randomAccessPreamble(self.raRnti, self.rapid))
         self.waitForRandomAccessResponseTimer = self.ioService.createTimer(
             self.procedureParameters["prachPreambleRepeatDelay"], self.__onRandomAccessResponseTimeout__)
         self.waitForRandomAccessResponseTimer.start()

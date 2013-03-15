@@ -3,7 +3,8 @@ import time
 
 from epc.utils.io import IoService, localhost
 from epc.procedures.ue.rrc import RrcConnectionEstablishmentProcedure
-from epc.messages.rrc import randomAccessResponse, contentionResolutionIdentity, rrcConnectionSetup 
+from epc.messages.rrc import rrcConnectionSetup
+from epc.messages.mac import randomAccessResponse, contentionResolutionIdentity
 
 class TestRrcConnectionProcedure(unittest.TestCase):
 
@@ -68,14 +69,6 @@ class TestRrcConnectionProcedure(unittest.TestCase):
         time.sleep(0.2) # smaller than 0.5       
         interface, channelInfo, message = contentionResolutionIdentity(
             temporaryCrnti, self.procedure.rrcConnectionRequestMessage)
-        message["messageType"] = "contentionResolutionIdentity"
-        # bm: Why is 'messageType' not entered in message creation function?
-        # ia: the content of the message should be the same the Layer-3 message (RRCCOnnectionRequest)
-        #     sent. However we are using the "messageType" field to do processing. Hence we are having
-        #     to change the message name from rrcConnectionRequest to contentionResolutionIdentity..
-        #     we need to fix this in another update, where I will separate the mac messages 
-        #     from the RRC messages. Until then this comment stays.
-        #     [remove this comment after mac messages are separated from rrc messages]
         self.enbIoService.sendMessage("ue", interface, channelInfo, message)
         time.sleep(2.5) # greater than 2.0
         self.assertEqual(self.result,
@@ -92,15 +85,7 @@ class TestRrcConnectionProcedure(unittest.TestCase):
             self.procedure.raRnti, self.procedure.rapid, temporaryCrnti, uplinkGrant))
         time.sleep(0.2) # smaller than 0.5
         interface, channelInfo, message = contentionResolutionIdentity(
-            temporaryCrnti, self.procedure.rrcConnectionRequestMessage)
-        message["messageType"] = "contentionResolutionIdentity"
-        # bm: Why is 'messageType' not entered in message creation function?
-        # ia: the content of the message should be the same the Layer-3 message (RRCCOnnectionRequest)
-        #     sent. However we are using the "messageType" field to do processing. Hence we are having
-        #     to change the message name from rrcConnectionRequest to contentionResolutionIdentity..
-        #     we need to fix this in another update, where I will separate the mac messages 
-        #     from the RRC messages. Until then this comment stays.
-        #     [remove this comment after mac messages are separated from rrc messages]
+            temporaryCrnti, self.procedure.rrcConnectionRequestMessage) 
         self.enbIoService.sendMessage("ue", interface, channelInfo, message)
         time.sleep(0.5) # less than 2.0
         rrcTransactionIdentifier = 4
@@ -121,14 +106,6 @@ class TestRrcConnectionProcedure(unittest.TestCase):
         time.sleep(0.2) # smaller than 0.5
         interface, channelInfo, message = contentionResolutionIdentity(
             temporaryCrnti, self.procedure.rrcConnectionRequestMessage)
-        message["messageType"] = "contentionResolutionIdentity"
-        # bm: Why is 'messageName' not entered in message creation function?
-        # ia: the content of the message should be the same the Layer-3 message (RRCCOnnectionRequest)
-        #     sent. However we are using the "messageName" field to do processing. Hence we are having
-        #     to change the message name from rrcConnectionRequest to contentionResolutionIdentity..
-        #     we need to fix this in another update, where I will separate the mac messages 
-        #     from the RRC messages. Until then this comment stays.
-        #     [remove this comment after mac messages are separated from rrc messages]
         self.enbIoService.sendMessage("ue", interface, channelInfo, message)
         time.sleep(0.5) # less than 2.0
         rrcTransactionIdentifier = 4
