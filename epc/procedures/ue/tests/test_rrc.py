@@ -12,23 +12,23 @@ class TestRrcConnectionProcedure(unittest.TestCase):
         self.ueIoService = IoService("ue", 9001)
         [s.start() for s in self.enbIoService, self.ueIoService]
         procedureParameters = {
-            "initialNasMessage": {
-             "nasMessageType": "attachRequest"
-            },
             "maxPrachPreambleAttempts": 5,
             "prachPreambleRepeatDelay": 0.7,
             "macContentionResolutionTimeout": 0.5,
             "rrcConnectionSetupTimeoutT300": 2.0
         }
-        args = {
+        rrcEstablishmentInputParameters = {
             "ueIdentityType": "randomValue",
             "ueIdentityValue": 3434,
             "rrcEstablishmentCause": "moSignaling",
-            "selectedPlmnIdentity": 2801
+            "selectedPlmnIdentity": 2801,
+            "initialNasMessage": {
+             "nasMessageType": "attachRequest"
+            }
         }
         self.procedure = RrcConnectionEstablishmentProcedure(
             procedureParameters, (localhost(), 9000),
-            self.ueIoService, self.__procedureCompleteCallback__, args)
+            self.ueIoService, self.__procedureCompleteCallback__, rrcEstablishmentInputParameters)
     
     def tearDown(self):
         [s.stop() for s in self.enbIoService, self.ueIoService]    
@@ -50,11 +50,6 @@ class TestRrcConnectionProcedure(unittest.TestCase):
         time.sleep(0.4) # smaller than 0.7
         temporaryCrnti = 43
         uplinkGrant = 12
-        # bm: I shorten the code using the '*'. This is called 'unpacking arguments'.
-        #     What it basically does is it aligns right part of '*' into argument list
-        #     the called function. randomAccessResponse() returns a list of values,
-        #     this values are aligned one by one in the called function.
-        #     [remove this comment after read]
         self.enbIoService.sendMessage("ue", *randomAccessResponse(
             self.procedure.raRnti, self.procedure.rapid, temporaryCrnti, uplinkGrant))
         time.sleep(2.0) # greater than 0.5
@@ -75,8 +70,12 @@ class TestRrcConnectionProcedure(unittest.TestCase):
             temporaryCrnti, self.procedure.rrcConnectionRequestMessage)
         message["messageType"] = "contentionResolutionIdentity"
         # bm: Why is 'messageType' not entered in message creation function?
-        #     [remove this comment after the fix, or immediately if this should be
-        #      the way to go]
+        # ia: the content of the message should be the same the Layer-3 message (RRCCOnnectionRequest)
+        #     sent. However we are using the "messageType" field to do processing. Hence we are having
+        #     to change the message name from rrcConnectionRequest to contentionResolutionIdentity..
+        #     we need to fix this in another update, where I will separate the mac messages 
+        #     from the RRC messages. Until then this comment stays.
+        #     [remove this comment after mac messages are separated from rrc messages]
         self.enbIoService.sendMessage("ue", interface, channelInfo, message)
         time.sleep(2.5) # greater than 2.0
         self.assertEqual(self.result,
@@ -96,8 +95,12 @@ class TestRrcConnectionProcedure(unittest.TestCase):
             temporaryCrnti, self.procedure.rrcConnectionRequestMessage)
         message["messageType"] = "contentionResolutionIdentity"
         # bm: Why is 'messageType' not entered in message creation function?
-        #     [remove this comment after the fix, or immediately if this should be
-        #      the way to go]
+        # ia: the content of the message should be the same the Layer-3 message (RRCCOnnectionRequest)
+        #     sent. However we are using the "messageType" field to do processing. Hence we are having
+        #     to change the message name from rrcConnectionRequest to contentionResolutionIdentity..
+        #     we need to fix this in another update, where I will separate the mac messages 
+        #     from the RRC messages. Until then this comment stays.
+        #     [remove this comment after mac messages are separated from rrc messages]
         self.enbIoService.sendMessage("ue", interface, channelInfo, message)
         time.sleep(0.5) # less than 2.0
         rrcTransactionIdentifier = 4
@@ -119,9 +122,13 @@ class TestRrcConnectionProcedure(unittest.TestCase):
         interface, channelInfo, message = contentionResolutionIdentity(
             temporaryCrnti, self.procedure.rrcConnectionRequestMessage)
         message["messageType"] = "contentionResolutionIdentity"
-        # bm: Why is 'messageType' not entered in message creation function?
-        #     [remove this comment after the fix, or immediately if this should be
-        #      the way to go]
+        # bm: Why is 'messageName' not entered in message creation function?
+        # ia: the content of the message should be the same the Layer-3 message (RRCCOnnectionRequest)
+        #     sent. However we are using the "messageName" field to do processing. Hence we are having
+        #     to change the message name from rrcConnectionRequest to contentionResolutionIdentity..
+        #     we need to fix this in another update, where I will separate the mac messages 
+        #     from the RRC messages. Until then this comment stays.
+        #     [remove this comment after mac messages are separated from rrc messages]
         self.enbIoService.sendMessage("ue", interface, channelInfo, message)
         time.sleep(0.5) # less than 2.0
         rrcTransactionIdentifier = 4
