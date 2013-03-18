@@ -2,6 +2,7 @@ import logging
 
 from ....utils.statemachine import State
 from ....procedures.enb.s1ap import S1SetupProcedure
+from ....procedures.enb.rrc import RrcConnectionEstablishmentProcedureHandler
 
 assertionLogger = logging.getLogger("assertions")
 
@@ -9,16 +10,16 @@ assertionLogger = logging.getLogger("assertions")
 class Deregistered(State):
 
     def __init__(self, enb):
-        self.enb = enb
+        super(Deregistered, self).__init__(enb)
 
     def register(self):
         self.enb.changeState(Registering)
 
 
-class Registering(object):
+class Registering(State):
 
     def __init__(self, enb):
-        self.enb = enb
+        super(Registering, self).__init__(enb)
 
     def __enter__(self):
         s1SetupRequestParameters = self.enb.config.getValue("s1.s1SetupParameters")
@@ -34,7 +35,7 @@ class Registering(object):
             self.enb.state = Registered(self.enb)
 
 
-class Registered(object):
+class Registered(State):
 
     def __init__(self, enb):
-        self.enb = enb
+        super(Registered, self).__init__(enb)
