@@ -1,7 +1,7 @@
 from ...utils.io import IoService
 from ...utils.statemachine import StateMachine
 from ...utils.config import Configuration
-from ...nodes.enb.states.states import Deregistered
+from ...nodes.enb.states import Deregistered
 
 # Configuration data model
 #

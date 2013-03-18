@@ -3,7 +3,7 @@ import time
 
 from epc.utils.io import IoService, localhost
 from epc.messages.rrc import rrcConnectionRequest, rrcConnectionSetupComplete
-from epc.nodes.enb import Enb
+from epc.nodes.enb.enb import Enb
 
 import logging
 msgTraceLogger = logging.getLogger("msgTrace")
