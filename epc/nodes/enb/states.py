@@ -1,8 +1,8 @@
 import logging
 
-from ....utils.statemachine import State
-from ....procedures.enb.s1ap import S1SetupProcedure
-from ....procedures.enb.rrc import RrcConnectionEstablishmentProcedureHandler
+from ...utils.statemachine import State
+from ...procedures.enb.s1ap import S1SetupProcedure
+from ...procedures.enb.rrc import RrcConnectionEstablishmentProcedureHandler
 
 assertionLogger = logging.getLogger("assertions")
 
