@@ -12,11 +12,15 @@ from ...nodes.enb.states.states import Deregistered
 #  "ioService": {
 #   "name": str(),
 #   "port": int(),
-#  }
+#  },
+#  "rrc" {
+#   "maxRrcConnectionSetupAttempts": int(),
+#   "rrcConnectionSetupTimeout": float(),
+#  },
 #  "s1": {
 #   "mmeAddress": (str(), int()),
 #   "s1SetupParameters": dict(),
-#  }
+#  },
 # }
 
 class Enb(StateMachine):

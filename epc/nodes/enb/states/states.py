@@ -39,3 +39,24 @@ class Registered(State):
 
     def __init__(self, enb):
         super(Registered, self).__init__(enb)
+        rrcParameters = self.enb.config.getValue("rrc")
+        maxRrcConnectionSetupAttempts, rrcConnectionSetupTimeout = \
+            [rrcParameters[k] for k in "maxRrcConnectionSetupAttempts", "rrcConnectionSetupTimeout"]
+        self.rrcConnectionEstablishmentProcedureHandler =  \
+            RrcConnectionEstablishmentProcedureHandler(
+            maxRrcConnectionSetupAttempts, rrcConnectionSetupTimeout,
+            self.ioService, self.__handleNewRrcConnectionEstablishment__)
+        self.ues = {}
+
+    def handleIncomingMessage(self, source, interface, channelInfo, message):
+        if interface == "uu":
+            if not channelInfo["logicalChannel"]:
+                self.rrcConnectionEstablishmentProcedureHandler.handleIncomingMessage(
+                    source, interface, channelInfo, message)
+            else:
+                assertionLogger.info("Not handling DCH messages yet")
+        elif interface == "s1":
+            assertionLogger.info("Not handling S1AP messages yet")
+
+    def __onNewRrcConnectionEstablishment__(self, cRnti, args):
+        self.ues[cRnti] = args
