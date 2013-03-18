@@ -10,7 +10,7 @@ assertionLogger = logging.getLogger("assertions")
 class Deregistered(State):
 
     def __init__(self, enb):
-        super(Deregistered, self).__init__(enb)
+        self.enb = enb
 
     def register(self):
         self.enb.changeState(Registering)
@@ -19,7 +19,7 @@ class Deregistered(State):
 class Registering(State):
 
     def __init__(self, enb):
-        super(Registering, self).__init__(enb)
+        self.enb = enb
 
     def __enter__(self):
         s1SetupRequestParameters = self.enb.config.getValue("s1.s1SetupParameters")
@@ -38,7 +38,7 @@ class Registering(State):
 class Registered(State):
 
     def __init__(self, enb):
-        super(Registered, self).__init__(enb)
+        self.enb = enb
         rrcParameters = self.enb.config.getValue("rrc")
         maxRrcConnectionSetupAttempts, rrcConnectionSetupTimeout = \
             [rrcParameters[k] for k in "maxRrcConnectionSetupAttempts", "rrcConnectionSetupTimeout"]
