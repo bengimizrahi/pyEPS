@@ -60,6 +60,9 @@ class IoService(object):
     def __onTimerExpiration__(self, callback, args, kwargs):
         self.eventQueue.put(("TIMEOUT", (callback, args, kwargs)))
     
+    def onConfigValueChanged(self, callback, path, value):
+        self.eventQueue.put(("CONFIG", (callback, path, value)))
+
     def sendMessage(self, destination, interface, channelInfo, message):
         if self.stopped:
             raise RuntimeError("{} already stopped".format(self))
@@ -121,3 +124,6 @@ class IoService(object):
             elif event == "TIMEOUT":
                 timerExpirationCallback, args, kwargs = param
                 timerExpirationCallback(*args, **kwargs)
+            elif event == "CONFIG":
+                valueChangedCallback, key, value = param
+                valueChangedCallback(key, value)
