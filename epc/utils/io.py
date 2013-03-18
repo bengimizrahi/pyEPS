@@ -58,10 +58,10 @@ class IoService(object):
         return threading.Timer(duration, self.__onTimerExpiration__, args=[callback, args, kwargs])
     
     def __onTimerExpiration__(self, callback, args, kwargs):
-        self.eventQueue.put(("TIMEOUT", (callback, args, kwargs)))
+        self.asyncCall(callback, *args, **kwargs)
     
-    def onConfigValueChanged(self, callback, path, value):
-        self.eventQueue.put(("CONFIG", (callback, path, value)))
+    def asyncCall(self, callback, *args, **kwargs):
+        self.eventQueue.put(("ASYNCCALL", (callback, args, kwargs)))
 
     def sendMessage(self, destination, interface, channelInfo, message):
         if self.stopped:
@@ -121,9 +121,6 @@ class IoService(object):
                 packet = param
                 for cb in self.incomingMessageCallback:
                     cb(packet["source"], packet["interface"], packet["channelInfo"], packet["message"])
-            elif event == "TIMEOUT":
-                timerExpirationCallback, args, kwargs = param
-                timerExpirationCallback(*args, **kwargs)
-            elif event == "CONFIG":
-                valueChangedCallback, key, value = param
-                valueChangedCallback(key, value)
+            elif event == "ASYNCCALL":
+                callback, args, kwargs = param
+                callback(*args, **kwargs)

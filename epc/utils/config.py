@@ -29,7 +29,7 @@ class Configuration(object):
                 continue
             if not all((a == b for a, b in zip(path, p))):
                 continue
-            self.ioService.onConfigValueChanged(cb, path, value)
+            self.ioService.asyncCall(cb, path, value)
 
     def getValue(self, path):
         if isinstance(path, str):
