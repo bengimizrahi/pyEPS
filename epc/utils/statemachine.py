@@ -7,11 +7,12 @@ class StateMachine(object):
 
     def __init__(self):
         self.state = None
+        self.context = None
 
     def changeState(self, stateClass):
         if hasattr(self.state, "__exit__"):
             self.state.__exit__()
-        self.state = stateClass()
+        self.state = stateClass(self.context)
         self.state.stateMachine = self
         if hasattr(self.state, "__enter__"):
             self.state.__enter__()

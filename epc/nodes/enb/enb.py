@@ -30,7 +30,7 @@ class Enb(StateMachine):
         self.config = Configuration(configData)
         ioServiceParameters = self.config.getValue("ioService")
         self.ioService = IoService(*(ioServiceParameters[k] for k in "name", "port"))
-        self.state = None
+        self.context = {"config": self.config, "ioService": self.ioService}
 
     def execute(self):
         self.ioService.addIncomingMessageCallback(self.handleIncomingMessage)
