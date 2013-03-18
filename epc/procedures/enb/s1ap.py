@@ -18,13 +18,11 @@ class S1SetupProcedure(object):
         missingParameters = filter(lambda p: p not in self.s1SetupRequestParameters, requiredParameters)
         if missingParameters:
             raise Exception("Missing S1 Setup parameters: {}".format(missingParameters))
-        self.ioService.addIncomingMessageCallback(self.__incomingMessageCallback__)
         self.__sendS1SetupRequest__()
 
     def terminate(self):
         if self.waitForNextAttemptTimer:
             self.waitForNextAttemptTimer.cancel()
-        self.ioService.removeIncomingMessageCallback(self.__incomingMessageCallback__)
 
     def __sendS1SetupRequest__(self):
         self.ioService.sendMessage(self.mmeAddress, *s1SetupRequest(**self.s1SetupRequestParameters))
@@ -33,7 +31,7 @@ class S1SetupProcedure(object):
         self.waitForNextAttemptTimer = None
         self.__sendS1SetupRequest__()
 
-    def __incomingMessageCallback__(self, source, interface, channelInfo, message):
+    def handleIncomingMessage(self, source, interface, channelInfo, message):
         def handleS1SetupResponse(s1SetupResponse):
             # Assume S1 Setup Response is processed successfully
             s1SetupResponseParameters = {}

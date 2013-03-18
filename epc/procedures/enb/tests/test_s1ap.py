@@ -24,6 +24,7 @@ class TestS1apSetupProcedureInitiation(unittest.TestCase):
         with self.assertRaises(Exception):
             self.procedure = S1SetupProcedure({}, (localhost(), 9000),
                 self.enbIoService, self.__procedureProgressCallback__)
+            self.enbIoService.addIncomingMessageCallback(self.procedure.handleIncomingMessage)
             self.procedure.execute()
             self.procedure.terminate()
 
@@ -55,6 +56,7 @@ class TestS1apSetupProcedure(unittest.TestCase):
         [s.start() for s in self.enbIoService, self.mmeIoService]
         self.procedure = S1SetupProcedure(self.sampleS1SetupRequestParameters,
             (localhost(), 9000), self.enbIoService, self.__procedureProgressCallback__)
+        self.enbIoService.addIncomingMessageCallback(self.procedure.handleIncomingMessage)
         self.progress = None
         self.args = None
 
