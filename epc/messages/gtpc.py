@@ -12,7 +12,7 @@ def createSessionRequest(interface, procedure, gtpcHeaderTeid, sequenceNumber, m
          "headerTeid": gtpcHeaderTeid,
          "sequenceNumber": sequenceNumber
         },
-         message
+        message
 )
 
 def bearerContextToBeCreatedIE(interface, procedure, messageParameters):
@@ -37,7 +37,7 @@ def createSessionResponse(interface, procedure, gtpcHeaderTeid, sequenceNumber, 
          "headerTeid": gtpcHeaderTeid,
          "sequenceNumber": sequenceNumber,
         },
-         message
+        message
 )    
 
 bearerContextCreatedIE = \

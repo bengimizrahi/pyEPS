@@ -18,7 +18,7 @@ class S11CreateSessionRequestProcedureHandler(object):
         self.result = None
         self.inputMessage = message
         self.imsi = message["imsi"]
-        self.mmeFteidForControlPlane = {"interfaceType": "ipv4", "teid": channelInfo["headerTeid"], "address": self.mmeAddressPort[0]}
+        self.mmeFteidForControlPlane = message["senderFteidForControlPlane"]
         self.pgwAddress = message["pgwS5S8AddressForContolPlane"]["address"]
         self.gtpcHeaderSequenceNumber = channelInfo["sequenceNumber"]
         if self.imsi in self.establishedS11SessionContexts:
