@@ -13,7 +13,7 @@ class Deregistered(State):
         self.enb = enb
 
     def register(self):
-        self.enb.changeState(Registering)
+        self.changeState(Registering)
 
 
 class Registering(State):
@@ -32,7 +32,7 @@ class Registering(State):
 
     def __onS1SetupProgress__(self, progress):
         if progress == S1SetupProcedure.ProgressSuccess:
-            self.enb.state = Registered(self.enb)
+            self.changeState(Registered)
 
 
 class Registered(State):
