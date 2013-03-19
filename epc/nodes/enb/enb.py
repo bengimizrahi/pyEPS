@@ -17,9 +17,15 @@ from ...nodes.enb.states import Deregistered
 #   "maxRrcConnectionSetupAttempts": int(),
 #   "rrcConnectionSetupTimeout": float(),
 #  },
-#  "s1": {
-#   "mmeAddress": (str(), int()),
+#  "mme": {
+#   "address": (str(), int()),
 #   "s1SetupParameters": dict(),
+#   "properties": None or {
+#    "name": str(),
+#    "servedGummeis": [(str(), tuple()), ...],
+#    "relativeMmeCapacity": int(),
+#    "criticalityDiagnostics": ?
+#   }
 #  },
 # }
 
