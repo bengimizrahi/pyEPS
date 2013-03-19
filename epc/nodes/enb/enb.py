@@ -9,11 +9,7 @@ from ...nodes.enb.states import Deregistered
 #  "control": {
 #   "adminState": bool(),
 #  },
-#  "ioService": {
-#   "name": str(),
-#   "port": int(),
-#  },
-#  "rrc" {
+#  "rrc": {
 #   "maxRrcConnectionSetupAttempts": int(),
 #   "rrcConnectionSetupTimeout": float(),
 #  },
@@ -31,11 +27,10 @@ from ...nodes.enb.states import Deregistered
 
 class Enb(StateMachine):
 
-    def __init__(self, configData):
+    def __init__(self, name, port, configData):
         super(Enb, self).__init__()
-        self.config = Configuration(configData)
-        ioServiceParameters = self.config.getValue("ioService")
-        self.ioService = IoService(*(ioServiceParameters[k] for k in "name", "port"))
+        self.ioService = IoService(name, port)
+        self.config = Configuration(configData, self.ioService)
         self.context = {"config": self.config, "ioService": self.ioService}
 
     def execute(self):
