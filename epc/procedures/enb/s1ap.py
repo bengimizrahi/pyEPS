@@ -33,9 +33,13 @@ class S1SetupProcedure(object):
 
     def handleIncomingMessage(self, source, interface, channelInfo, message):
         def handleS1SetupResponse(s1SetupResponse):
-            # Assume S1 Setup Response is processed successfully
-            s1SetupResponseParameters = {}
-            self.procedureProgressCallback(self.ProgressSuccess, s1SetupResponseParameters)
+            mmeProperties = {
+                "name": s1SetupResponse["mmeName"],
+                "servedGummeis": s1SetupResponse["servedGummeis"],
+                "relativeMmeCapacity": s1SetupResponse["relativeMmeCapacity"],
+                "criticalityDiagnostics": s1SetupResponse["criticalityDiagnostics"]
+            }
+            self.procedureProgressCallback(self.ProgressSuccess, mmeProperties)
 
         def handleS1SetupFailure(s1SetupFailure):
             assert not s1SetupFailure["criticalityDiagnostics"], \
