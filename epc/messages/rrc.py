@@ -22,7 +22,7 @@ randomAccessResponse = \
         {
          "physicalChannel" :"pdcch/pdsch",   #RA-RNTI is in the PDCCH. 
          "transportChannel": "dl-sch",  # RAPID and UL Grant and Temp-CRNTI are in PDSCH
-         "logicalChannel": "None",
+         "logicalChannel": None,
          "raRnti" : raRnti   # the crc bits of pdcch are scrambled by raRnti
          },
          {
@@ -60,7 +60,7 @@ contentionResolutionIdentity = \
         {
          "physicalChannel" :"pdsch",
          "transportChannel": "dl-sch",
-         "logicalChannel": "none",
+         "logicalChannel": None,
          "C-RNTI": cRnti  # the PDCCH CRC bits are scrambled by the temporary CRNTI
         },
         messageContent
@@ -97,4 +97,33 @@ rrcConnectionSetupComplete = \
          "selectedPlmnIdentity":  selectedPlmnIdentity,
          "dedicatedInfoNas": dedicatedInfoNas
         }
+)
+
+
+rrcUlInformationTransfer = lambda dedicatedInfoNas: (
+    "uu",
+    {
+     "physicalChannel" : "pusch",
+     "transportChannel": "ul-sch",
+     "logicalChannel": "dcch",
+     "lcid":  "srb1"
+    },
+    {
+     "messageName": "rrcUlInformationTransfer",
+     "dedicatedInfoNas": dedicatedInfoNas
+    }
+)
+
+rrcDlInformationTransfer = lambda dedicatedInfoNas: (
+    "uu",
+    {
+     "physicalChannel" : "pusch",
+     "transportChannel": "ul-sch",
+     "logicalChannel": "dcch",
+     "lcid":  "srb1"
+    },
+    {
+     "messageName": "rrcDlInformationTransfer",
+     "dedicatedInfoNas": dedicatedInfoNas
+    }
 )

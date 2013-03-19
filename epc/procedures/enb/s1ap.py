@@ -15,16 +15,14 @@ class S1SetupProcedure(object):
 
     def execute(self):
         requiredParameters = ("globalEnbId", "enbName", "supportedTas", "csgIdList", "defaultPagingDrx")
-        missingParameters = filter(lambda p: p not in self.s1SetupRequestParameters, requiredParameters)
+        missingParameters = set(requiredParameters) - set(self.s1SetupRequestParameters)
         if missingParameters:
             raise Exception("Missing S1 Setup parameters: {}".format(missingParameters))
-        self.ioService.addIncomingMessageCallback(self.__incomingMessageCallback__)
         self.__sendS1SetupRequest__()
 
     def terminate(self):
         if self.waitForNextAttemptTimer:
             self.waitForNextAttemptTimer.cancel()
-        self.ioService.removeIncomingMessageCallback(self.__incomingMessageCallback__)
 
     def __sendS1SetupRequest__(self):
         self.ioService.sendMessage(self.mmeAddress, *s1SetupRequest(**self.s1SetupRequestParameters))
@@ -33,11 +31,15 @@ class S1SetupProcedure(object):
         self.waitForNextAttemptTimer = None
         self.__sendS1SetupRequest__()
 
-    def __incomingMessageCallback__(self, source, interface, channelInfo, message):
+    def handleIncomingMessage(self, source, interface, channelInfo, message):
         def handleS1SetupResponse(s1SetupResponse):
-            # Assume S1 Setup Response is processed successfully
-            s1SetupResponseParameters = {}
-            self.procedureProgressCallback(self.ProgressSuccess, s1SetupResponseParameters)
+            mmeProperties = {
+                "name": s1SetupResponse["mmeName"],
+                "servedGummeis": s1SetupResponse["servedGummeis"],
+                "relativeMmeCapacity": s1SetupResponse["relativeMmeCapacity"],
+                "criticalityDiagnostics": s1SetupResponse["criticalityDiagnostics"]
+            }
+            self.procedureProgressCallback(self.ProgressSuccess, mmeProperties)
 
         def handleS1SetupFailure(s1SetupFailure):
             assert not s1SetupFailure["criticalityDiagnostics"], \

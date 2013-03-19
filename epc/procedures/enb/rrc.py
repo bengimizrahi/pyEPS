@@ -18,16 +18,16 @@ class RrcConnectionEstablishmentProcedure(object):
         self.rrcConnectionSetupTimer = None
         self.procedureCompleteCallbackExecuted = False
 
-    def __notifyProcedureCompletion__(self, result):
+    def __notifyProcedureCompletion__(self, result, address):
         if result == self.Success:
-            self.procedureCompleteCallback(result, self.cRnti, self.rrcTransactionIdentifier, {
+            self.procedureCompleteCallback(result, address, self.cRnti, self.rrcTransactionIdentifier, {
                 "ueIdentity": self.ueIdentity,
                 "rrcEstablishmentCause": self.rrcEstablishmentCause,
                 "selectedPlmnIdentity": self.selectedPlmnIdentity,
                 "dedicatedInfoNas": self.dedicatedInfoNas
             })
         else:
-            self.procedureCompleteCallback(result, self.cRnti, self.rrcTransactionIdentifier)
+            self.procedureCompleteCallback(result, address, self.cRnti, self.rrcTransactionIdentifier)
 
     def handleRrcEstablishmentMessage(self, source, interface, channelInfo, message, args=None):
         if message["messageName"] == "rrcConnectionRequest":
@@ -44,7 +44,7 @@ class RrcConnectionEstablishmentProcedure(object):
             self.dedicatedInfoNas = message["dedicatedInfoNas"]
             if not self.procedureCompleteCallbackExecuted:
                 self.rrcConnectionSetupTimer.cancel()
-                self.__notifyProcedureCompletion__(self.Success)
+                self.__notifyProcedureCompletion__(self.Success, source)
                 self.procedureCompleteCallbackExecuted = True
 
     def __sendContentionResolutionIdentity__(self, messageRrcConnectionRequest):
@@ -110,12 +110,12 @@ class RrcConnectionEstablishmentProcedureHandler(object):
         self.rrcTransIdIndex += 1
         return ((self.rrcTransIdIndex - 1) % 256)
 
-    def __procedureCompleteCallback__(self, result, cRnti, rrcTransactionIdentifier, args=None):
+    def __procedureCompleteCallback__(self, result, address, cRnti, rrcTransactionIdentifier, args=None):
         kpiName = (result == RrcConnectionEstablishmentProcedure.Success and
             "numRrcConnectionEstablishmentSuccesses" or "numRrcConnectionEstablishmentFailures")
         self.kpis[kpiName] += 1
         if result == RrcConnectionEstablishmentProcedure.Success:
-            self.newRrcConnectionEstablishmentCallback(cRnti, args)
+            self.newRrcConnectionEstablishmentCallback(address, cRnti, args)
         del self.rrcTransactionIdToCrntiMapping[rrcTransactionIdentifier]
         del self.ongoingRrcEstablishmentProcedures[cRnti]
 

@@ -1,11 +1,15 @@
 import unittest
+import time
 
+from epc.utils.io import IoService
 from epc.utils.config import Configuration
 
 
 class TestConfiguration(unittest.TestCase):
     
     def setUp(self):
+        self.ioService = IoService("service", 9000)
+        self.ioService.start()
         self.cfg = Configuration({
             "rrm": {
                 "t3212": 64,
@@ -30,7 +34,11 @@ class TestConfiguration(unittest.TestCase):
                 "username": "fap123",
                 "password": "fap123"
             }
-        })
+        }, self.ioService)
+        self.result = [None, None]
+
+    def tearDown(self):
+        self.ioService.stop()
 
     def test_setValue(self):
         self.cfg.setValue(("oam", "cliEnabled"), False)
@@ -51,6 +59,7 @@ class TestConfiguration(unittest.TestCase):
             self.result = (path, value)
         self.cfg.addListener("oam", onValueChanged)
         self.cfg.setValue("oam.cliEnabled", False)
+        time.sleep(0.1)
         self.assertListEqual(self.result[0], list(("oam", "cliEnabled")))
         self.assertEqual(self.result[1], False)
 
@@ -60,4 +69,5 @@ class TestConfiguration(unittest.TestCase):
             self.listenerCalled = True
         self.cfg.addListener("oam.cliEnabled", onValueChanged)
         self.cfg.setValue("rrm.t3212", 10)
+        time.sleep(0.1)
         self.assertFalse(self.listenerCalled)

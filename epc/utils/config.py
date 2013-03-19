@@ -1,7 +1,8 @@
 class Configuration(object):
 
-    def __init__(self, content):
+    def __init__(self, content, ioService):
         self.content = content
+        self.ioService = ioService
         self.listeners = []
 
     def addListener(self, path, callback):
@@ -28,7 +29,7 @@ class Configuration(object):
                 continue
             if not all((a == b for a, b in zip(path, p))):
                 continue
-            cb(path, value)
+            self.ioService.asyncCall(cb, path, value)
 
     def getValue(self, path):
         if isinstance(path, str):
