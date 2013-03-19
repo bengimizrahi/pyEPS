@@ -15,8 +15,8 @@ class S1SetupProcedureHandler(object):
                 ("mmeName", "servedGummeis", "timeToWait", "flags"),
                 ("rejectS1SetupRequestsFromRegisteredEnbs",)
             )
-            missingParameters = filter(lambda p: p not in self.procedureParameters, requiredProcedureParameters)
-            missingFlags = filter(lambda f: f not in self.procedureParameters["flags"], requiredProcedureFlags)
+            missingParameters = set(requiredProcedureParameters) - set(self.procedureParameters)
+            missingFlags = set(requiredProcedureFlags) - set(self.procedureParameters["flags"])
             assert not missingParameters, "Missing parameters in mmeSettings: {}".format(missingParameters)
             assert not missingFlags, "Missing flags in procedureParameters['flags']: {}".format(missingFlags)
         verifySettings()

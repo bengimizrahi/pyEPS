@@ -15,7 +15,7 @@ class S1SetupProcedure(object):
 
     def execute(self):
         requiredParameters = ("globalEnbId", "enbName", "supportedTas", "csgIdList", "defaultPagingDrx")
-        missingParameters = filter(lambda p: p not in self.s1SetupRequestParameters, requiredParameters)
+        missingParameters = set(requiredParameters) - set(self.s1SetupRequestParameters)
         if missingParameters:
             raise Exception("Missing S1 Setup parameters: {}".format(missingParameters))
         self.__sendS1SetupRequest__()
