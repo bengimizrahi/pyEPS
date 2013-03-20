@@ -11,7 +11,7 @@ randomAccessRequest = lambda raRnti, rapid: (
      "raRnti" : raRnti  # between 1 and 10 (the subframe in which the message is xmitted)
     },
     {
-     "messageName": "randomAccessRequest",
+     "messageType": "randomAccessRequest",
      "rapid": rapid
     }
 )
@@ -26,7 +26,7 @@ randomAccessResponse = \
          "raRnti" : raRnti   # the crc bits of pdcch are scrambled by raRnti
          },
          {
-          "messageName": "randomAccessResponse",
+          "messageType": "randomAccessResponse",
           "rapid": rapid,  # number between 1 and 64
           "uplinkGrant": uplinkGrant,
           "temporaryCrnti": temporaryCrnti
@@ -45,7 +45,7 @@ rrcConnectionRequest = \
                         # re-establishment, the C-RNTI is included as part of the MAC header. 
         },
         {
-         "messageName": "rrcConnectionRequest",
+         "messageType": "rrcConnectionRequest",
          "ueIdentity" : {
           "type": ueIdentityType,
           "value": ueIdentityValue
@@ -77,7 +77,7 @@ rrcConnectionSetup =  \
          "lcid": "SRB0"   # The MAC header contains the Logical ID                                                
          },
          {
-          "messageName": "rrcConnectionSetup",
+          "messageType": "rrcConnectionSetup",
           "rrcTransactionIdentifier" : rrcTransactionIdentifier
          }
 )
@@ -92,7 +92,7 @@ rrcConnectionSetupComplete = \
          "lcid":  "srb1"
         },
         {
-         "messageName": "rrcConnectionSetupComplete",
+         "messageType": "rrcConnectionSetupComplete",
          "rrcTransactionIdentifier" : rrcTransactionIdentifier,
          "selectedPlmnIdentity":  selectedPlmnIdentity,
          "dedicatedInfoNas": dedicatedInfoNas
@@ -109,7 +109,7 @@ rrcUlInformationTransfer = lambda dedicatedInfoNas: (
      "lcid":  "srb1"
     },
     {
-     "messageName": "rrcUlInformationTransfer",
+     "messageType": "rrcUlInformationTransfer",
      "dedicatedInfoNas": dedicatedInfoNas
     }
 )
@@ -123,7 +123,7 @@ rrcDlInformationTransfer = lambda dedicatedInfoNas: (
      "lcid":  "srb1"
     },
     {
-     "messageName": "rrcDlInformationTransfer",
+     "messageType": "rrcDlInformationTransfer",
      "dedicatedInfoNas": dedicatedInfoNas
     }
 )

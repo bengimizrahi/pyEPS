@@ -60,18 +60,18 @@ class RrcConnectionEstablishmentProcedure(object):
             if t: t.cancel()
 
     def __incomingMessageCallback__(self, source, interface, channelInfo, message):
-        if message["messageName"] == "randomAccessResponse":
+        if message["messageType"] == "randomAccessResponse":
             if channelInfo["raRnti"] == self.raRnti and \
                     message["rapid"] == self.rapid:
                 self.waitForRandomAccessResponseTimer.cancel()
                 self.temporaryCrnti = message["temporaryCrnti"]
                 self.__sendRrcConnectionRequest__()
-        elif message["messageName"] == "contentionResolutionIdentity":
+        elif message["messageType"] == "contentionResolutionIdentity":
             # need to check here if the message content is the same as that send in rrc connection request
-            message["messageName"] = self.rrcConnectionRequestMessage["messageName"]
+            message["messageType"] = self.rrcConnectionRequestMessage["messageType"]
             if message == self.rrcConnectionRequestMessage:
                 self.waitForMacContentionResolutionTimer.cancel()
-        elif message["messageName"] == "rrcConnectionSetup":
+        elif message["messageType"] == "rrcConnectionSetup":
             if channelInfo["puschScramblingInput"] == self.temporaryCrnti:
                 self.rrcTransactionIdentifier = message["rrcTransactionIdentifier"]
                 self.__sendRrcConnectionSetupComplete__()
