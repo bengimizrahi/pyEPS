@@ -7,6 +7,13 @@ from epc.nodes.mme.mme import Mme
 from epc.nodes.enb.enb import Enb
 from epc.procedures.ue.rrc import RrcConnectionEstablishmentProcedure
 
+import logging
+for l in ("msgTrace", "assertions"):
+    logger = logging.getLogger(l)
+    logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler()
+    logger.addHandler(handler)
+
 
 class TestS1Interface(unittest.TestCase):
 
