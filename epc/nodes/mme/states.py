@@ -44,7 +44,7 @@ class Default(MmeState):
             "s1Setup": handleS1SetupMessage,
         }
         procedureCode = message["messageType"]["procedureCode"]
-        mapping.get(procedureCode, handleOtherMessages)(message)
+        mapping.get(procedureCode, handleOtherMessages)()
 
 
     class MmeServiceArea(object):
@@ -52,6 +52,9 @@ class Default(MmeState):
         def __init__(self, maxEnbsAllowed):
             self.maxEnbsAllowed = maxEnbsAllowed
             self.enbs = {}
+
+        def __contains__(self, globalEnbId):
+            return globalEnbId in self.enbs
 
         def add(self, address, globalEnbId):
             if globalEnbId in self.enbs:
@@ -62,8 +65,8 @@ class Default(MmeState):
             return not len(self.enbs) < self.maxEnbsAllowed
 
 
-    class Enb(object):
+        class Enb(object):
 
-        def __init__(self, globalEnbId, address):
-            self.globalEnbId = globalEnbId
-            self.address = address
+            def __init__(self, globalEnbId, address):
+                self.globalEnbId = globalEnbId
+                self.address = address

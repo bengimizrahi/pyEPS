@@ -33,8 +33,8 @@ class Registering(EnbState):
         super(Registering, self).__init__(context)
 
     def __enter__(self):
-        s1SetupRequestParameters = self.config.getValue("s1.s1SetupParameters")
-        mmeAddress = self.config.getValue("s1.mmeAddress")
+        s1SetupRequestParameters = self.config.getValue("mme.s1SetupParameters")
+        mmeAddress = self.config.getValue("mme.address")
         self.procedure = S1SetupProcedure(s1SetupRequestParameters,
             mmeAddress, self.ioService, self.__onS1SetupProgress__)
         self.procedure.execute()
@@ -60,7 +60,7 @@ class Registered(EnbState):
         self.rrcConnectionEstablishmentProcedureHandler =  \
             RrcConnectionEstablishmentProcedureHandler(
             maxRrcConnectionSetupAttempts, rrcConnectionSetupTimeout,
-            self.ioService, self.__handleNewRrcConnectionEstablishment__)
+            self.ioService, self.__onNewRrcConnectionEstablishment__)
         self.mmeAddress = self.config.getValue("mme.address")
         self.enbUeS1apIdGenerator = idGenerator(2**24)
         self.uePool = self.UePool()

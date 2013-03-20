@@ -7,7 +7,10 @@ class StateMachine(object):
 
     def __init__(self):
         self.state = None
-        self.context = None
+        self.setContext(None)
+
+    def setContext(self, context):
+        self.context = context
 
     def changeState(self, stateClass):
         if hasattr(self.state, "__exit__"):

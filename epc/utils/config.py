@@ -1,3 +1,7 @@
+class ConfigPath(str):
+    pass
+
+
 class Configuration(object):
 
     def __init__(self, content, ioService):
@@ -17,16 +21,18 @@ class Configuration(object):
         it = self.content
         for s in path:
             it = it[s]
+        if isinstance(it, ConfigPath):
+            return self.getValue(it)
         return it
 
     def setValue(self, path, value):
-        if isinstance(path, str):
+        if isinstance(path, str) or isinstance(path, ConfigPath):
             path = path.split(".")
         try:
             it = self.__getValueAtPath__(path[:-1])
             it[path[-1]] = value
         except KeyError:
-            raise Exception("path {} does not exist".format(path))
+            raise Exception("path '{}' does not exist".format(".".join(path)))
         for p, cb in self.listeners:
             if len(path) < len(p):
                 continue
@@ -35,9 +41,9 @@ class Configuration(object):
             self.ioService.asyncCall(cb, path, value)
 
     def getValue(self, path):
-        if isinstance(path, str):
+        if isinstance(path, str) or isinstance(path, ConfigPath):
             path = path.split(".")
         try:
             return self.__getValueAtPath__(path)
         except KeyError:
-            raise Exception("path {} does not exist".format(path))
+            raise Exception("path '{}' does not exist".format(".".join(path)))

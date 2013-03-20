@@ -7,7 +7,7 @@ from ...nodes.mme.states import Default
 # {
 #  "system": {
 #   "mmeName": str(),
-#   "servedGummeis": [(str(), tuple()), ...],
+#   "servedGummeis": [((), (), ()), ...],
 #   "maximumEnbsAllowed": int(),
 #  },
 #  "s1": {
@@ -21,6 +21,7 @@ class Mme(StateMachine):
         super(Mme, self).__init__()
         self.ioService = IoService(name, port)
         self.config = Configuration(configData, self.ioService)
+        self.setContext({"config": self.config, "ioService": self.ioService})
 
     def execute(self):
         self.ioService.addIncomingMessageCallback(self.handleIncomingMessage)
