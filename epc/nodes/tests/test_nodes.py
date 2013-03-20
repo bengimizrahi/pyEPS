@@ -57,7 +57,6 @@ class TestS1Interface(unittest.TestCase):
         time.sleep(0.1)
         self.assertEqual(self.enb.config.getValue("mme.properties.name"), "Istanbul")
 
-    @unittest.skip("not working")
     def test_rrcConnectionSetupProcedureSuccessful(self):
         time.sleep(0.1) # Wait for S1 Setup
         def rrcComplete(result):
