@@ -3,6 +3,7 @@ from Queue import Queue
 import socket
 import logging
 import sys
+import pprint
 
 
 msgTraceLogger = logging.getLogger("msgTrace")
@@ -105,8 +106,8 @@ class IoService(object):
             except SyntaxError:
                 assertionLogger.error("eval({}) raised SyntaxError, ignoring message...".format(msg))
                 continue
-            msgTraceLogger.info("Incoming packet to IoService({}, {}): {}".format(self.name, self.udpPort, packet))
             source = packet["source"]
+            msgTraceLogger.info("{}{} -> {}({}): {}".format(source, addr, self.name, self.udpPort, pprint.pformat(packet)))
             if not self.peers.get(source):
                 self.peers[source] = addr
             self.eventQueue.put(("PACKET", packet))
