@@ -79,7 +79,7 @@ class TestS1Interface(unittest.TestCase):
             "selectedPlmnIdentity": 2801
         })
         rrcProcedure.execute()
-        time.sleep(0.2)
+        time.sleep(2)
         self.assertEqual(self.result, RrcConnectionEstablishmentProcedure.Success)
         ueIoService.stop()
 
