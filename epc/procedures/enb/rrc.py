@@ -64,7 +64,7 @@ class RrcConnectionEstablishmentProcedure(object):
         if self.attemptNo < self.maxRrcConnectionSetupAttempts:
             self.__sendRrcConnectionSetup__()
         else:
-            self.__notifyProcedureCompletion__(self.ErrorNoRrcConnectionCompleteMessage)
+            self.__notifyProcedureCompletion__(self.ErrorNoRrcConnectionCompleteMessage, self.ueAddress)
             # bm: Should we not set precedureCompleteCallbackExecuted to True
             #     [Remove comment after read]
 
