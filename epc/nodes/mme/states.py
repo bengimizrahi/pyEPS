@@ -53,6 +53,9 @@ class Default(MmeState):
             self.maxEnbsAllowed = maxEnbsAllowed
             self.enbs = {}
 
+        def __contains__(self, globalEnbId):
+            return globalEnbId in self.enbs
+
         def add(self, address, globalEnbId):
             if globalEnbId in self.enbs:
                 return
