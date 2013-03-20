@@ -60,7 +60,7 @@ class Registered(EnbState):
         self.rrcConnectionEstablishmentProcedureHandler =  \
             RrcConnectionEstablishmentProcedureHandler(
             maxRrcConnectionSetupAttempts, rrcConnectionSetupTimeout,
-            self.ioService, self.__handleNewRrcConnectionEstablishment__)
+            self.ioService, self.__onNewRrcConnectionEstablishment__)
         self.mmeAddress = self.config.getValue("mme.address")
         self.enbUeS1apIdGenerator = idGenerator(2**24)
         self.uePool = self.UePool()
