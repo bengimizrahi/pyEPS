@@ -22,8 +22,11 @@ class Configuration(object):
     def setValue(self, path, value):
         if isinstance(path, str):
             path = path.split(".")
-        it = self.__getValueAtPath__(path[:-1])
-        it[path[-1]] = value
+        try:
+            it = self.__getValueAtPath__(path[:-1])
+            it[path[-1]] = value
+        except KeyError:
+            raise Exception("path {} does not exist".format(path))
         for p, cb in self.listeners:
             if len(path) < len(p):
                 continue
@@ -34,4 +37,7 @@ class Configuration(object):
     def getValue(self, path):
         if isinstance(path, str):
             path = path.split(".")
-        return self.__getValueAtPath__(path)
+        try:
+            return self.__getValueAtPath__(path)
+        except KeyError:
+            raise Exception("path {} does not exist".format(path))
