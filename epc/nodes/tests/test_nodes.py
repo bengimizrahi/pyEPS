@@ -1,10 +1,11 @@
 import unittest
 import time
 
-from epc.utils.io import localhost
+from epc.utils.io import IoService, localhost
 from epc.utils.config import ConfigPath
 from epc.nodes.mme.mme import Mme
 from epc.nodes.enb.enb import Enb
+from epc.procedures.ue.rrc import RrcConnectionEstablishmentProcedure
 
 
 class TestS1Interface(unittest.TestCase):
@@ -55,6 +56,30 @@ class TestS1Interface(unittest.TestCase):
     def test_s1SetupSuccessful(self):
         time.sleep(0.1)
         self.assertEqual(self.enb.config.getValue("mme.properties.name"), "Istanbul")
+
+    @unittest.skip("not working")
+    def test_rrcConnectionSetupProcedureSuccessful(self):
+        def rrcComplete():
+            pass
+        ueIoService = IoService("ue", 9001)
+        ueIoService.start()
+        rrcProcedure = RrcConnectionEstablishmentProcedure({
+            "initialNasMessage": {
+             "nasMessageType": "attachRequest"
+            },
+            "maxPrachPreambleAttempts": 5,
+            "prachPreambleRepeatDelay": 0.7,
+            "macContentionResolutionTimeout": 0.5,
+            "rrcConnectionSetupTimeoutT300": 2.0
+        }, (localhost(), 9000), ueIoService, rrcComplete, {
+            "ueIdentityType": "randomValue",
+            "ueIdentityValue": 3434,
+            "rrcEstablishmentCause": "moSignaling",
+            "selectedPlmnIdentity": 2801
+        })
+        rrcProcedure.execute()
+        ueIoService.stop()
+
 
 if __name__ == "__main__":
     unittest.main()
