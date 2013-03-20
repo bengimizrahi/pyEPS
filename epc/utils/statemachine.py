@@ -27,7 +27,7 @@ class StateMachine(object):
     def handleIncomingMessage(self, *args):
         if not self.state.handleIncomingMessage(*args):
             assertionLogger.info("'{}' received unknown message {}".format(
-                self.__class__.__name__, pprint.pformat(args)))
+                self.state.__class__.__name__, pprint.pformat(args)))
 
 
 class State(object):
