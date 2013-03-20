@@ -59,13 +59,15 @@ class TestS1Interface(unittest.TestCase):
 
     @unittest.skip("not working")
     def test_rrcConnectionSetupProcedureSuccessful(self):
-        def rrcComplete():
-            pass
+        time.sleep(0.1) # Wait for S1 Setup
+        def rrcComplete(result):
+            self.result = result
+        self.result = None
         ueIoService = IoService("ue", 9001)
         ueIoService.start()
         rrcProcedure = RrcConnectionEstablishmentProcedure({
             "initialNasMessage": {
-             "nasMessageType": "attachRequest"
+                "nasMessageType": "attachRequest"
             },
             "maxPrachPreambleAttempts": 5,
             "prachPreambleRepeatDelay": 0.7,
@@ -78,6 +80,8 @@ class TestS1Interface(unittest.TestCase):
             "selectedPlmnIdentity": 2801
         })
         rrcProcedure.execute()
+        time.sleep(0.2)
+        self.assertEqual(self.result, RrcConnectionEstablishmentProcedure.Success)
         ueIoService.stop()
 
 
