@@ -54,7 +54,7 @@ class TestS1Interface(unittest.TestCase):
 
     def test_s1SetupSuccessful(self):
         time.sleep(0.1)
-        self.assertTrue(self.enb.config.getValue("mme.properties.name"), "Istanbul")
+        self.assertEqual(self.enb.config.getValue("mme.properties.name"), "Istanbul")
 
 if __name__ == "__main__":
     unittest.main()
