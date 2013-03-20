@@ -61,7 +61,7 @@ contentionResolutionIdentity = \
          "physicalChannel" :"pdsch",
          "transportChannel": "dl-sch",
          "logicalChannel": None,
-         "C-RNTI": cRnti  # the PDCCH CRC bits are scrambled by the temporary CRNTI
+         "cRnti": cRnti  # the PDCCH CRC bits are scrambled by the temporary CRNTI
         },
         messageContent
 )
@@ -74,7 +74,7 @@ rrcConnectionSetup =  \
          "transportChannel": "ul-sch",  
          "logicalChannel": "ccch",
          "puschScramblingInput": cRnti,  # The crnti scambles the pusch channel
-         "lcid": "SRB0"   # The MAC header contains the Logical ID                                                
+         "lcid": "srb0"   # The MAC header contains the Logical ID
          },
          {
           "messageType": "rrcConnectionSetup",
