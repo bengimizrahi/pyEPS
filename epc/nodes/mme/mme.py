@@ -7,7 +7,7 @@ from ...nodes.mme.states import Default
 # {
 #  "system": {
 #   "mmeName": str(),
-#   "servedGummeis": [(str(), tuple()), ...],
+#   "servedGummeis": [((), (), ()), ...],
 #   "maximumEnbsAllowed": int(),
 #  },
 #  "s1": {
