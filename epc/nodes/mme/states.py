@@ -62,8 +62,8 @@ class Default(MmeState):
             return not len(self.enbs) < self.maxEnbsAllowed
 
 
-    class Enb(object):
+        class Enb(object):
 
-        def __init__(self, globalEnbId, address):
-            self.globalEnbId = globalEnbId
-            self.address = address
+            def __init__(self, globalEnbId, address):
+                self.globalEnbId = globalEnbId
+                self.address = address
