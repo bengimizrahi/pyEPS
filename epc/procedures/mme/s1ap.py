@@ -3,9 +3,9 @@ from ...messages.s1ap import s1SetupResponse, s1SetupFailure
 
 class S1SetupProcedureHandler(object):
 
-    def __init__(self, procedureParameters, enbPool, ioService, enbRegisteredCallback):
+    def __init__(self, procedureParameters, mmeServiceArea, ioService, enbRegisteredCallback):
         self.procedureParameters = procedureParameters
-        self.enbPool = enbPool
+        self.mmeServiceArea = mmeServiceArea
         self.ioService = ioService
         self.enbRegisteredCallback = enbRegisteredCallback
     
@@ -15,8 +15,8 @@ class S1SetupProcedureHandler(object):
                 ("mmeName", "servedGummeis", "timeToWait", "flags"),
                 ("rejectS1SetupRequestsFromRegisteredEnbs",)
             )
-            missingParameters = filter(lambda p: p not in self.procedureParameters, requiredProcedureParameters)
-            missingFlags = filter(lambda f: f not in self.procedureParameters["flags"], requiredProcedureFlags)
+            missingParameters = set(requiredProcedureParameters) - set(self.procedureParameters)
+            missingFlags = set(requiredProcedureFlags) - set(self.procedureParameters["flags"])
             assert not missingParameters, "Missing parameters in mmeSettings: {}".format(missingParameters)
             assert not missingFlags, "Missing flags in procedureParameters['flags']: {}".format(missingFlags)
         verifySettings()
@@ -35,13 +35,13 @@ class S1SetupProcedureHandler(object):
                 255, None
             )
             self.ioService.sendMessage(destination, *s1SetupResponse(*params))
-        if self.enbPool.congested():
+        if self.mmeServiceArea.congested():
             sendReject(source, "congestion", self.procedureParameters["timeToWait"])
             return
         globalEnbId = message["globalEnbId"]
-        if globalEnbId in self.enbPool and \
+        if globalEnbId in self.mmeServiceArea and \
             self.procedureParameters["flags"]["rejectS1SetupRequestsFromRegisteredEnbs"]:
                 sendReject(source, "unspecified", None)
                 return
         sendAccept(source)
-        self.enbRegisteredCallback(globalEnbId)
+        self.enbRegisteredCallback(source, globalEnbId)

@@ -11,7 +11,7 @@ randomAccessRequest = lambda raRnti, rapid: (
      "raRnti" : raRnti  # between 1 and 10 (the subframe in which the message is xmitted)
     },
     {
-     "messageName": "randomAccessRequest",
+     "messageType": "randomAccessRequest",
      "rapid": rapid
     }
 )
@@ -22,11 +22,11 @@ randomAccessResponse = \
         {
          "physicalChannel" :"pdcch/pdsch",   #RA-RNTI is in the PDCCH. 
          "transportChannel": "dl-sch",  # RAPID and UL Grant and Temp-CRNTI are in PDSCH
-         "logicalChannel": "None",
+         "logicalChannel": None,
          "raRnti" : raRnti   # the crc bits of pdcch are scrambled by raRnti
          },
          {
-          "messageName": "randomAccessResponse",
+          "messageType": "randomAccessResponse",
           "rapid": rapid,  # number between 1 and 64
           "uplinkGrant": uplinkGrant,
           "temporaryCrnti": temporaryCrnti
@@ -45,7 +45,7 @@ rrcConnectionRequest = \
                         # re-establishment, the C-RNTI is included as part of the MAC header. 
         },
         {
-         "messageName": "rrcConnectionRequest",
+         "messageType": "rrcConnectionRequest",
          "ueIdentity" : {
           "type": ueIdentityType,
           "value": ueIdentityValue
@@ -60,8 +60,8 @@ contentionResolutionIdentity = \
         {
          "physicalChannel" :"pdsch",
          "transportChannel": "dl-sch",
-         "logicalChannel": "none",
-         "C-RNTI": cRnti  # the PDCCH CRC bits are scrambled by the temporary CRNTI
+         "logicalChannel": None,
+         "cRnti": cRnti  # the PDCCH CRC bits are scrambled by the temporary CRNTI
         },
         messageContent
 )
@@ -74,10 +74,10 @@ rrcConnectionSetup =  \
          "transportChannel": "ul-sch",  
          "logicalChannel": "ccch",
          "puschScramblingInput": cRnti,  # The crnti scambles the pusch channel
-         "lcid": "SRB0"   # The MAC header contains the Logical ID                                                
+         "lcid": "srb0"   # The MAC header contains the Logical ID
          },
          {
-          "messageName": "rrcConnectionSetup",
+          "messageType": "rrcConnectionSetup",
           "rrcTransactionIdentifier" : rrcTransactionIdentifier
          }
 )
@@ -92,9 +92,38 @@ rrcConnectionSetupComplete = \
          "lcid":  "srb1"
         },
         {
-         "messageName": "rrcConnectionSetupComplete",
+         "messageType": "rrcConnectionSetupComplete",
          "rrcTransactionIdentifier" : rrcTransactionIdentifier,
          "selectedPlmnIdentity":  selectedPlmnIdentity,
          "dedicatedInfoNas": dedicatedInfoNas
         }
+)
+
+
+rrcUlInformationTransfer = lambda dedicatedInfoNas: (
+    "uu",
+    {
+     "physicalChannel" : "pusch",
+     "transportChannel": "ul-sch",
+     "logicalChannel": "dcch",
+     "lcid":  "srb1"
+    },
+    {
+     "messageType": "rrcUlInformationTransfer",
+     "dedicatedInfoNas": dedicatedInfoNas
+    }
+)
+
+rrcDlInformationTransfer = lambda dedicatedInfoNas: (
+    "uu",
+    {
+     "physicalChannel" : "pusch",
+     "transportChannel": "ul-sch",
+     "logicalChannel": "dcch",
+     "lcid":  "srb1"
+    },
+    {
+     "messageType": "rrcDlInformationTransfer",
+     "dedicatedInfoNas": dedicatedInfoNas
+    }
 )
