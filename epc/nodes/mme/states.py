@@ -44,7 +44,7 @@ class Default(MmeState):
             "s1Setup": handleS1SetupMessage,
         }
         procedureCode = message["messageType"]["procedureCode"]
-        mapping.get(procedureCode, handleOtherMessages)(message)
+        mapping.get(procedureCode, handleOtherMessages)()
 
 
     class MmeServiceArea(object):
