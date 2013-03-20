@@ -88,7 +88,7 @@ class Registered(EnbState):
             ("s1", ("downlinkNasTransport",), handleDownlinkNasTransportMessage),
         )
         for i, m, f in mapping:
-            if interface == i and message in m:
+            if interface == i and message["messageType"] in m:
                 f()
                 return True
 
