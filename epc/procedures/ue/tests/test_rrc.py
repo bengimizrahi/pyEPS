@@ -73,8 +73,8 @@ class TestRrcConnectionProcedure(unittest.TestCase):
         time.sleep(0.2) # smaller than 0.5       
         interface, channelInfo, message = contentionResolutionIdentity(
             temporaryCrnti, self.procedure.rrcConnectionRequestMessage)
-        message["messageName"] = "contentionResolutionIdentity"
-        # bm: Why is 'messageName' not entered in message creation function?
+        message["messageType"] = "contentionResolutionIdentity"
+        # bm: Why is 'messageType' not entered in message creation function?
         #     [remove this comment after the fix, or immediately if this should be
         #      the way to go]
         self.enbIoService.sendMessage("ue", interface, channelInfo, message)
@@ -94,8 +94,8 @@ class TestRrcConnectionProcedure(unittest.TestCase):
         time.sleep(0.2) # smaller than 0.5
         interface, channelInfo, message = contentionResolutionIdentity(
             temporaryCrnti, self.procedure.rrcConnectionRequestMessage)
-        message["messageName"] = "contentionResolutionIdentity"
-        # bm: Why is 'messageName' not entered in message creation function?
+        message["messageType"] = "contentionResolutionIdentity"
+        # bm: Why is 'messageType' not entered in message creation function?
         #     [remove this comment after the fix, or immediately if this should be
         #      the way to go]
         self.enbIoService.sendMessage("ue", interface, channelInfo, message)
@@ -118,8 +118,8 @@ class TestRrcConnectionProcedure(unittest.TestCase):
         time.sleep(0.2) # smaller than 0.5
         interface, channelInfo, message = contentionResolutionIdentity(
             temporaryCrnti, self.procedure.rrcConnectionRequestMessage)
-        message["messageName"] = "contentionResolutionIdentity"
-        # bm: Why is 'messageName' not entered in message creation function?
+        message["messageType"] = "contentionResolutionIdentity"
+        # bm: Why is 'messageType' not entered in message creation function?
         #     [remove this comment after the fix, or immediately if this should be
         #      the way to go]
         self.enbIoService.sendMessage("ue", interface, channelInfo, message)

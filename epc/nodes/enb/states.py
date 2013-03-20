@@ -41,6 +41,7 @@ class Registering(EnbState):
 
     def handleIncomingMessage(self, *args):
         self.procedure.handleIncomingMessage(*args)
+        return True
 
     def __onS1SetupProgress__(self, progress, mmeProperties=None):
         if progress == S1SetupProcedure.ProgressSuccess:
@@ -81,20 +82,15 @@ class Registered(EnbState):
             ue = self.uePool.ueByEnbUeS1apId(message["enbUeS1apId"])
             self.ioService.sendMessage(ue.address, *rrcDlInformationTransfer(
                 dedicatedInfoNas))
-
-        def handleUnknownMessage():
-            assertionLogger.info("{} received unknown message ({})".format(self.__class__.__name__,
-                (source, interface, channelInfo, message)))
         mapping = (
             ("uu", RRC_CONNECTION_SETUP_ESTABLISHMENT_PROCEDURE_MESSAGES, handleRrcConnectionSetupEstablishmentProcedureMessages),
             ("uu", ("rrcUlInformationTransfer",), handleUlInformationTransferMessage),
             ("s1", ("downlinkNasTransport",), handleDownlinkNasTransportMessage),
         )
         for i, m, f in mapping:
-            if interface == i and message in m:
+            if interface == i and message["messageType"] in m:
                 f()
-                return
-        handleUnknownMessage()
+                return True
 
     def __onNewRrcConnectionEstablishment__(self, address, cRnti, args):
         enbUeS1apId = self.enbUeS1apIdGenerator.next()

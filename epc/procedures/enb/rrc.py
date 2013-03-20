@@ -30,7 +30,7 @@ class RrcConnectionEstablishmentProcedure(object):
             self.procedureCompleteCallback(result, address, self.cRnti, self.rrcTransactionIdentifier)
 
     def handleRrcEstablishmentMessage(self, source, interface, channelInfo, message, args=None):
-        if message["messageName"] == "rrcConnectionRequest":
+        if message["messageType"] == "rrcConnectionRequest":
             self.rrcTransactionIdentifier = args["rrcTransactionIdentifier"]        
             self.ueAddress = source
             self.cRnti = channelInfo["cRnti"]
@@ -38,7 +38,7 @@ class RrcConnectionEstablishmentProcedure(object):
             self.rrcEstablishmentCause = message["rrcEstablishmentCause"]
             self.__sendContentionResolutionIdentity__(message)
             self.__sendRrcConnectionSetup__()
-        if message["messageName"] == "rrcConnectionSetupComplete":
+        if message["messageType"] == "rrcConnectionSetupComplete":
             assert message["rrcTransactionIdentifier"] == self.rrcTransactionIdentifier
             self.selectedPlmnIdentity = message["selectedPlmnIdentity"]
             self.dedicatedInfoNas = message["dedicatedInfoNas"]
@@ -48,7 +48,7 @@ class RrcConnectionEstablishmentProcedure(object):
                 self.procedureCompleteCallbackExecuted = True
 
     def __sendContentionResolutionIdentity__(self, messageRrcConnectionRequest):
-        messageRrcConnectionRequest["messageName"] = "contentionResolutionIdentity"
+        messageRrcConnectionRequest["messageType"] = "contentionResolutionIdentity"
         self.ioService.sendMessage(self.ueAddress, *contentionResolutionIdentity(
             self.cRnti, messageRrcConnectionRequest))
 
@@ -64,7 +64,7 @@ class RrcConnectionEstablishmentProcedure(object):
         if self.attemptNo < self.maxRrcConnectionSetupAttempts:
             self.__sendRrcConnectionSetup__()
         else:
-            self.__notifyProcedureCompletion__(self.ErrorNoRrcConnectionCompleteMessage)
+            self.__notifyProcedureCompletion__(self.ErrorNoRrcConnectionCompleteMessage, self.ueAddress)
             # bm: Should we not set precedureCompleteCallbackExecuted to True
             #     [Remove comment after read]
 
@@ -120,14 +120,14 @@ class RrcConnectionEstablishmentProcedureHandler(object):
         del self.ongoingRrcEstablishmentProcedures[cRnti]
 
     def handleIncomingMessage(self, source, interface, channelInfo, message):
-        if message["messageName"] == "randomAccessRequest":
+        if message["messageType"] == "randomAccessRequest":
             self.kpis["numRandomAccessRequestsReceived"] += 1
             temporaryCrnti = self.__generateTemporaryCrnti__()
             uplinkGrant = self.__generateUplinkGrant__()
             raRnti = channelInfo["raRnti"]
             rapid = message["rapid"]
             self.__sendRandomAccessResponse__(source, raRnti, rapid, temporaryCrnti, uplinkGrant)
-        if message["messageName"] == "rrcConnectionRequest":
+        if message["messageType"] == "rrcConnectionRequest":
             self.kpis["numRrcConnectionRequestsReceived"] += 1
             cRnti = channelInfo["cRnti"]
             rrcTransactionIdentifier = self.__generateRrcTransactionIdentifier__()
@@ -136,7 +136,7 @@ class RrcConnectionEstablishmentProcedureHandler(object):
                 self.ioService, self.__procedureCompleteCallback__)
             self.ongoingRrcEstablishmentProcedures[cRnti].handleRrcEstablishmentMessage(source, interface,
                 channelInfo, message, {"rrcTransactionIdentifier": rrcTransactionIdentifier})
-        if message["messageName"] == "rrcConnectionSetupComplete":
+        if message["messageType"] == "rrcConnectionSetupComplete":
             self.kpis["numRrcConnectionSetupCompletesReceived"] += 1
             rrcTransactionIdentifier = message["rrcTransactionIdentifier"]
             if rrcTransactionIdentifier in self.rrcTransactionIdToCrntiMapping:

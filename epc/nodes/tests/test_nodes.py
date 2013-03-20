@@ -1,10 +1,18 @@
 import unittest
 import time
 
-from epc.utils.io import localhost
+from epc.utils.io import IoService, localhost
 from epc.utils.config import ConfigPath
 from epc.nodes.mme.mme import Mme
 from epc.nodes.enb.enb import Enb
+from epc.procedures.ue.rrc import RrcConnectionEstablishmentProcedure
+
+import logging
+for l in ("msgTrace", "assertions"):
+    logger = logging.getLogger(l)
+    logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler()
+    logger.addHandler(handler)
 
 
 class TestS1Interface(unittest.TestCase):
@@ -54,7 +62,34 @@ class TestS1Interface(unittest.TestCase):
 
     def test_s1SetupSuccessful(self):
         time.sleep(0.1)
-        self.assertTrue(self.enb.config.getValue("mme.properties.name"), "Istanbul")
+        self.assertEqual(self.enb.config.getValue("mme.properties.name"), "Istanbul")
+
+    def test_rrcConnectionSetupProcedureSuccessful(self):
+        time.sleep(0.1) # Wait for S1 Setup
+        def rrcComplete(result):
+            self.result = result
+        self.result = None
+        ueIoService = IoService("ue", 9001)
+        ueIoService.start()
+        rrcProcedure = RrcConnectionEstablishmentProcedure({
+            "initialNasMessage": {
+                "nasMessageType": "attachRequest"
+            },
+            "maxPrachPreambleAttempts": 5,
+            "prachPreambleRepeatDelay": 0.7,
+            "macContentionResolutionTimeout": 0.5,
+            "rrcConnectionSetupTimeoutT300": 2.0
+        }, (localhost(), 9000), ueIoService, rrcComplete, {
+            "ueIdentityType": "randomValue",
+            "ueIdentityValue": 3434,
+            "rrcEstablishmentCause": "moSignaling",
+            "selectedPlmnIdentity": 2801
+        })
+        rrcProcedure.execute()
+        time.sleep(2)
+        self.assertEqual(self.result, RrcConnectionEstablishmentProcedure.Success)
+        ueIoService.stop()
+
 
 if __name__ == "__main__":
     unittest.main()

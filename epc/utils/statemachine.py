@@ -1,4 +1,5 @@
 import logging
+import pprint
 
 assertionLogger = logging.getLogger("assertions")
 
@@ -24,7 +25,9 @@ class StateMachine(object):
         self.state.handleCommand(command, *args, **kwargs)
 
     def handleIncomingMessage(self, *args):
-        self.state.handleIncomingMessage(*args)
+        if not self.state.handleIncomingMessage(*args):
+            assertionLogger.info("'{}' received unknown message {}".format(
+                self.state.__class__.__name__, pprint.pformat(args)))
 
 
 class State(object):
@@ -34,6 +37,6 @@ class State(object):
 
     def handleCommand(self, command, *args, **kwargs):
         def handleUnknownCommand(self, command, *args, **kwargs):
-            assertionLogger.info("{} received unknown command: {}({}, {})".format(
-                self.__class__.__name__, command, args, kwargs))
+            assertionLogger.info("'{}' received unknown command: {}".format(
+                self.__class__.__name__, pprint.pformat(command, (args, kwargs))))
         getattr(self, command, handleUnknownCommand)(*args, **kwargs)
