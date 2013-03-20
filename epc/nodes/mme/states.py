@@ -38,13 +38,14 @@ class Default(MmeState):
             self.s1SetupProcedureHandler.handleIncomingS1SetupMessage(
                 source, interface, channelInfo, message)
 
-        def handleOtherMessages():
-            pass
         mapping = {
             "s1Setup": handleS1SetupMessage,
         }
         procedureCode = message["messageType"]["procedureCode"]
-        mapping.get(procedureCode, handleOtherMessages)()
+        f = mapping.get(procedureCode)
+        if f:
+            f()
+            return True
 
 
     class MmeServiceArea(object):
