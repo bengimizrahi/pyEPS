@@ -3,7 +3,6 @@ import time
 
 from epc.utils.io import IoService, localhost
 from epc.procedures.ue.rrc import RrcConnectionEstablishmentProcedure as UeRrcConnectionEstablishmentProcedure
-from epc.procedures.mme.s1ap import S1SetupProcedureHandler as MmeS1SetupProcedureHandler
 from epc.nodes.enb.enb import Enb
 
 class TestUe2EnbRrcEstablishment(unittest.TestCase):
