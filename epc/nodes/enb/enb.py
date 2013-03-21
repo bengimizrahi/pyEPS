@@ -18,7 +18,7 @@ from ...nodes.enb.states import Deregistered
 #   "s1SetupParameters": dict(),
 #   "properties": None or {
 #    "name": str(),
-#    "servedGummeis": [(str(), tuple()), ...],
+#    "servedGummeis": [((), (), ()), ...],
 #    "relativeMmeCapacity": int(),
 #    "criticalityDiagnostics": ?
 #   }
