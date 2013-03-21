@@ -4,8 +4,7 @@ import time
 from epc.utils.io import IoService, localhost
 from epc.procedures.enb.s1ap import S1SetupProcedure as EnbS1SetupProcedure
 from epc.procedures.mme.s1ap import S1SetupProcedureHandler as MmeS1SetupProcedureHandler
-from epc.nodes.mme import EnbPool
-
+from epc.nodes.mme.mme.Default import MmeServiceArea
 
 class TestS1SetupProcedureHandler(unittest.TestCase):
 
@@ -58,7 +57,7 @@ class TestS1SetupProcedureHandler(unittest.TestCase):
         self.enbPool.add(globalEnbId)
 
     def test_AllSuccessfulS1Setups(self):
-        self.enbPool = EnbPool(self.numEnbs)
+        self.enbPool = MmeServiceArea(self.numEnbs)
         self.mmeProcedureHandler = MmeS1SetupProcedureHandler(self.mmeParameters, self.enbPool, self.mmeIoService,
             self.__mmeOnEnbRegisteredCallback__)
         self.mmeIoService.addIncomingMessageCallback(self.mmeProcedureHandler.handleIncomingS1SetupMessage)
@@ -69,7 +68,7 @@ class TestS1SetupProcedureHandler(unittest.TestCase):
         self.assertEqual(len(self.enbPool), self.numEnbs)
 
     def test_AllSuccessfulS1SetupsExceptOne(self):
-        self.enbPool = EnbPool(self.numEnbs - 1)
+        self.enbPool = MmeServiceArea(self.numEnbs)
         self.mmeProcedureHandler = MmeS1SetupProcedureHandler(self.mmeParameters, self.enbPool, self.mmeIoService,
             self.__mmeOnEnbRegisteredCallback__)
         self.mmeIoService.addIncomingMessageCallback(self.mmeProcedureHandler.handleIncomingS1SetupMessage)

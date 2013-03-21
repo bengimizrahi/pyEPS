@@ -1,8 +1,8 @@
 import random
 from collections import Counter
 
-from ...messages.rrc import contentionResolutionIdentity, rrcConnectionSetup, randomAccessResponse
-
+from ...messages.rrc import rrcConnectionSetup
+from ...messages.mac import randomAccessResponse, contentionResolutionIdentity
 
 class RrcConnectionEstablishmentProcedure(object):
 
@@ -48,7 +48,6 @@ class RrcConnectionEstablishmentProcedure(object):
                 self.procedureCompleteCallbackExecuted = True
 
     def __sendContentionResolutionIdentity__(self, messageRrcConnectionRequest):
-        messageRrcConnectionRequest["messageType"] = "contentionResolutionIdentity"
         self.ioService.sendMessage(self.ueAddress, *contentionResolutionIdentity(
             self.cRnti, messageRrcConnectionRequest))
 

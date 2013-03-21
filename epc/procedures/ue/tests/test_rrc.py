@@ -3,7 +3,8 @@ import time
 
 from epc.utils.io import IoService, localhost
 from epc.procedures.ue.rrc import RrcConnectionEstablishmentProcedure
-from epc.messages.rrc import randomAccessResponse, contentionResolutionIdentity, rrcConnectionSetup 
+from epc.messages.rrc import rrcConnectionSetup
+from epc.messages.mac import randomAccessResponse, contentionResolutionIdentity
 
 class TestRrcConnectionProcedure(unittest.TestCase):
 
@@ -12,23 +13,23 @@ class TestRrcConnectionProcedure(unittest.TestCase):
         self.ueIoService = IoService("ue", 9001)
         [s.start() for s in self.enbIoService, self.ueIoService]
         procedureParameters = {
-            "initialNasMessage": {
-             "nasMessageType": "attachRequest"
-            },
             "maxPrachPreambleAttempts": 5,
             "prachPreambleRepeatDelay": 0.7,
             "macContentionResolutionTimeout": 0.5,
             "rrcConnectionSetupTimeoutT300": 2.0
         }
-        args = {
+        rrcEstablishmentInputParameters = {
             "ueIdentityType": "randomValue",
             "ueIdentityValue": 3434,
             "rrcEstablishmentCause": "moSignaling",
-            "selectedPlmnIdentity": 2801
+            "selectedPlmnIdentity": 2801,
+            "initialNasMessage": {
+             "nasMessageType": "attachRequest"
+            }
         }
         self.procedure = RrcConnectionEstablishmentProcedure(
             procedureParameters, (localhost(), 9000),
-            self.ueIoService, self.__procedureCompleteCallback__, args)
+            self.ueIoService, self.__procedureCompleteCallback__, rrcEstablishmentInputParameters)
     
     def tearDown(self):
         [s.stop() for s in self.enbIoService, self.ueIoService]    
@@ -50,11 +51,6 @@ class TestRrcConnectionProcedure(unittest.TestCase):
         time.sleep(0.4) # smaller than 0.7
         temporaryCrnti = 43
         uplinkGrant = 12
-        # bm: I shorten the code using the '*'. This is called 'unpacking arguments'.
-        #     What it basically does is it aligns right part of '*' into argument list
-        #     the called function. randomAccessResponse() returns a list of values,
-        #     this values are aligned one by one in the called function.
-        #     [remove this comment after read]
         self.enbIoService.sendMessage("ue", *randomAccessResponse(
             self.procedure.raRnti, self.procedure.rapid, temporaryCrnti, uplinkGrant))
         time.sleep(2.0) # greater than 0.5
@@ -73,10 +69,6 @@ class TestRrcConnectionProcedure(unittest.TestCase):
         time.sleep(0.2) # smaller than 0.5       
         interface, channelInfo, message = contentionResolutionIdentity(
             temporaryCrnti, self.procedure.rrcConnectionRequestMessage)
-        message["messageType"] = "contentionResolutionIdentity"
-        # bm: Why is 'messageType' not entered in message creation function?
-        #     [remove this comment after the fix, or immediately if this should be
-        #      the way to go]
         self.enbIoService.sendMessage("ue", interface, channelInfo, message)
         time.sleep(2.5) # greater than 2.0
         self.assertEqual(self.result,
@@ -93,11 +85,7 @@ class TestRrcConnectionProcedure(unittest.TestCase):
             self.procedure.raRnti, self.procedure.rapid, temporaryCrnti, uplinkGrant))
         time.sleep(0.2) # smaller than 0.5
         interface, channelInfo, message = contentionResolutionIdentity(
-            temporaryCrnti, self.procedure.rrcConnectionRequestMessage)
-        message["messageType"] = "contentionResolutionIdentity"
-        # bm: Why is 'messageType' not entered in message creation function?
-        #     [remove this comment after the fix, or immediately if this should be
-        #      the way to go]
+            temporaryCrnti, self.procedure.rrcConnectionRequestMessage) 
         self.enbIoService.sendMessage("ue", interface, channelInfo, message)
         time.sleep(0.5) # less than 2.0
         rrcTransactionIdentifier = 4
@@ -118,10 +106,6 @@ class TestRrcConnectionProcedure(unittest.TestCase):
         time.sleep(0.2) # smaller than 0.5
         interface, channelInfo, message = contentionResolutionIdentity(
             temporaryCrnti, self.procedure.rrcConnectionRequestMessage)
-        message["messageType"] = "contentionResolutionIdentity"
-        # bm: Why is 'messageType' not entered in message creation function?
-        #     [remove this comment after the fix, or immediately if this should be
-        #      the way to go]
         self.enbIoService.sendMessage("ue", interface, channelInfo, message)
         time.sleep(0.5) # less than 2.0
         rrcTransactionIdentifier = 4

@@ -1,30 +1,19 @@
 import random
 
-from ...messages.rrc import randomAccessRequest, rrcConnectionRequest, rrcConnectionSetupComplete
+from ...messages.rrc import rrcConnectionRequest, rrcConnectionSetupComplete
+from ...messages.mac import randomAccessPreamble
 
 class RrcConnectionEstablishmentProcedure(object):
-    
+
     Success, ErrorNoRandomAccessResponse, ErrorNoContentionResolutionIdentity, ErrorNoRrcConnectionSetup = range(4)
     
-    def __init__(self, procedureParameters, enbAddress, ioService, procedureCompleteCallback, args=None):
-        # bm: I gathered all the parameters into 'procedureParameters',
-        #     looks like you also gathered the rest into 'args'. You might
-        #     want to either:
-        #     -  Group them all into one dictionary, or
-        #     -  Redistribute the items inside 'procedureParameters' and 'args'
-        #        so that the groups make sense. Ex: seems like 'initialNasMessage'
-        #        should be moved to 'args'. After that you might also want to
-        #        rename 'procedureParameters' & 'args' to something else that makes
-        #        it more self-documented (optional).
-        #     [remove this comment after done]
+    def __init__(self, procedureParameters, enbAddress, ioService, procedureCompleteCallback, 
+                 rrcEstablishmentInputParameters):
         self.procedureParameters = procedureParameters
+        self.rrcEstablishmentInputParameters = rrcEstablishmentInputParameters
         self.enbAddress = enbAddress
         self.ioService = ioService
         self.procedureCompleteCallback = procedureCompleteCallback
-        self.ueIdentityType = args["ueIdentityType"]
-        self.ueIdentityValue = args["ueIdentityValue"]
-        self.rrcEstablishmentCause = args["rrcEstablishmentCause"]
-        self.selectedPlmnIdentity = args["selectedPlmnIdentity"]
         self.procedureCompleteCallbackExecuted = False
         self.attemptNo = 0
         self.waitForRandomAccessResponseTimer = None
@@ -34,11 +23,16 @@ class RrcConnectionEstablishmentProcedure(object):
         self.rapid = self.__generateRapid__()
 
     def execute(self):
-        requiredParameters = ("initialNasMessage", "maxPrachPreambleAttempts", "prachPreambleRepeatDelay",
+        requiredProcedureParameters = ("maxPrachPreambleAttempts", "prachPreambleRepeatDelay",
             "macContentionResolutionTimeout", "rrcConnectionSetupTimeoutT300")
-        missingParameters = filter(lambda p: p not in self.procedureParameters, requiredParameters)
-        if missingParameters:
-            raise Exception("Missing RRC Connection Setup Procedure parameters: {}".format(missingParameters))
+        missingProcedureParameters = filter(lambda p: p not in self.procedureParameters, requiredProcedureParameters)
+        if missingProcedureParameters:
+            raise Exception("Missing RRC Connection Setup Procedure parameters: {}".format(missingProcedureParameters))
+        requiredInputParameters = ("ueIdentityType", "ueIdentityValue", "rrcEstablishmentCause", 
+                                   "selectedPlmnIdentity", "initialNasMessage")
+        missingInputParameters = set(requiredInputParameters) - set(self.rrcEstablishmentInputParameters)
+        if missingInputParameters:
+            raise Exception("Missing RRC Establishment input parameters: {}".format(missingInputParameters))
         self.ioService.addIncomingMessageCallback(self.__incomingMessageCallback__)
         self.__sendPrachPreamble__()
 
@@ -68,8 +62,7 @@ class RrcConnectionEstablishmentProcedure(object):
                 self.__sendRrcConnectionRequest__()
         elif message["messageType"] == "contentionResolutionIdentity":
             # need to check here if the message content is the same as that send in rrc connection request
-            message["messageType"] = self.rrcConnectionRequestMessage["messageType"]
-            if message == self.rrcConnectionRequestMessage:
+            if message["echoedMessage"] == self.rrcConnectionRequestMessage:
                 self.waitForMacContentionResolutionTimer.cancel()
         elif message["messageType"] == "rrcConnectionSetup":
             if channelInfo["puschScramblingInput"] == self.temporaryCrnti:
@@ -82,7 +75,7 @@ class RrcConnectionEstablishmentProcedure(object):
     
     def __sendPrachPreamble__(self):
         self.attemptNo += 1
-        self.ioService.sendMessage(self.enbAddress, *randomAccessRequest(self.raRnti, self.rapid))
+        self.ioService.sendMessage(self.enbAddress, *randomAccessPreamble(self.raRnti, self.rapid))
         self.waitForRandomAccessResponseTimer = self.ioService.createTimer(
             self.procedureParameters["prachPreambleRepeatDelay"], self.__onRandomAccessResponseTimeout__)
         self.waitForRandomAccessResponseTimer.start()
@@ -94,7 +87,9 @@ class RrcConnectionEstablishmentProcedure(object):
             self.__notifyProcedureCompletion__(self.ErrorNoRandomAccessResponse)
 
     def __sendRrcConnectionRequest__(self):
-        interface, channelInfo, message = rrcConnectionRequest(34343, "randomValue", 9989982, "moSignalling")
+        interface, channelInfo, message = rrcConnectionRequest(self.temporaryCrnti, self.rrcEstablishmentInputParameters["ueIdentityType"],
+                                                               self.rrcEstablishmentInputParameters["ueIdentityValue"],
+                                                               self.rrcEstablishmentInputParameters["rrcEstablishmentCause"])
         self.ioService.sendMessage(self.enbAddress, interface, channelInfo, message)
         self.rrcConnectionRequestMessage = message # need to store this to compre with macCRI
         self.waitForRrcConnectionSetupTimerT300 = self.ioService.createTimer(
@@ -114,4 +109,4 @@ class RrcConnectionEstablishmentProcedure(object):
     
     def __sendRrcConnectionSetupComplete__(self):
         self.ioService.sendMessage(self.enbAddress, *rrcConnectionSetupComplete(self.rrcTransactionIdentifier, 
-            self.selectedPlmnIdentity, self.procedureParameters["initialNasMessage"]))
+            self.rrcEstablishmentInputParameters["selectedPlmnIdentity"], self.rrcEstablishmentInputParameters["initialNasMessage"]))
