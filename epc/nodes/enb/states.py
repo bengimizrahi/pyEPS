@@ -102,7 +102,7 @@ class Registered(EnbState):
         rrcEstablishmentCause = args["rrcEstablishmentCause"]
         ue = self.Ue(address, cRnti, enbUeS1apId, rrcEstablishmentCause)
         self.uePool.addUe(ue)
-        nasPdu = args["dedicatedNasInfo"]
+        nasPdu = args["dedicatedInfoNas"]
         gummei = self.config.getValue("mme.properties.servedGummeis")[0]
         self.ioService.sendMessage(self.mmeAddress, *initialUeMessage(
             enbUeS1apId, nasPdu, None, None, rrcEstablishmentCause, None, None, gummei, None))
