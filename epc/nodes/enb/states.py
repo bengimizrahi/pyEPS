@@ -2,8 +2,8 @@ import logging
 
 from ...utils.statemachine import State
 from ...utils.helpers import idGenerator
-from ...messages.rrc import RRC_CONNECTION_SETUP_ESTABLISHMENT_PROCEDURE_MESSAGES, rrcDlInformationTransfer
 from ...messages.s1ap import initialUeMessage, uplinkNasTransport
+from ...messages.rrc import rrcDlInformationTransfer
 from ...procedures.enb.s1ap import S1SetupProcedure
 from ...procedures.enb.rrc import RrcConnectionEstablishmentProcedureHandler
 
@@ -83,7 +83,8 @@ class Registered(EnbState):
             self.ioService.sendMessage(ue.address, *rrcDlInformationTransfer(
                 dedicatedInfoNas))
         mapping = (
-            ("uu", RRC_CONNECTION_SETUP_ESTABLISHMENT_PROCEDURE_MESSAGES, handleRrcConnectionSetupEstablishmentProcedureMessages),
+            ("uu", ("randomAccessPreamble", "rrcConnectionRequest", "rrcConnectionSetupComplete"),
+                handleRrcConnectionSetupEstablishmentProcedureMessages),
             ("uu", ("rrcUlInformationTransfer",), handleUlInformationTransferMessage),
             ("s1", ("downlinkNasTransport",), handleDownlinkNasTransportMessage),
         )
