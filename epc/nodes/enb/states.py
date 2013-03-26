@@ -87,8 +87,10 @@ class Registered(EnbState):
         mapping = (
             ("uu", ("randomAccessPreamble", "rrcConnectionRequest", "rrcConnectionSetupComplete"),
                 handleRrcConnectionSetupEstablishmentProcedureMessages),
-            ("uu", ("rrcUlInformationTransfer",), handleUlInformationTransferMessage),
-            ("s1", ("downlinkNasTransport",), handleDownlinkNasTransportMessage),
+            ("uu", ("rrcUlInformationTransfer",),
+                handleUlInformationTransferMessage),
+            ("s1", ("downlinkNasTransport",),
+                handleDownlinkNasTransportMessage),
         )
         for i, m, f in mapping:
             if interface == i and message["messageType"] in m:
