@@ -68,7 +68,7 @@ class Registered(EnbState):
 
     def handleIncomingMessage(self, source, interface, channelInfo, message):
         def handleRrcConnectionSetupEstablishmentProcedureMessages():
-            self.rrcConnectionEstablishmentProcedureHandler.handleIncomingMessage(
+            return self.rrcConnectionEstablishmentProcedureHandler.handleIncomingMessage(
                 source, interface, channelInfo, message)
 
         def handleUlInformationTransferMessage():
@@ -76,12 +76,14 @@ class Registered(EnbState):
             ue = self.uePool.ueByCrnti(channelInfo["cRnti"])
             self.ioService.sendMessage(self.mmeAddress, *uplinkNasTransport(
                 ue.enbUeS1apId, ue.mmeUeS1apId, nasPdu, None))
+            return True
 
         def handleDownlinkNasTransportMessage():
             dedicatedInfoNas = message["nasPdu"]
             ue = self.uePool.ueByEnbUeS1apId(message["enbUeS1apId"])
             self.ioService.sendMessage(ue.address, *rrcDlInformationTransfer(
                 dedicatedInfoNas))
+            return True
         mapping = (
             ("uu", ("randomAccessPreamble", "rrcConnectionRequest", "rrcConnectionSetupComplete"),
                 handleRrcConnectionSetupEstablishmentProcedureMessages),
@@ -90,8 +92,8 @@ class Registered(EnbState):
         )
         for i, m, f in mapping:
             if interface == i and message["messageType"] in m:
-                f()
-                return True
+                return f()
+        return False
 
     def __onNewRrcConnectionEstablishment__(self, address, cRnti, args):
         enbUeS1apId = self.enbUeS1apIdGenerator.next()
