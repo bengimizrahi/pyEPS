@@ -2,8 +2,8 @@ import logging
 
 from ...utils.statemachine import State
 from ...utils.helpers import idGenerator
-from ...messages.rrc import RRC_CONNECTION_SETUP_ESTABLISHMENT_PROCEDURE_MESSAGES, rrcDlInformationTransfer
 from ...messages.s1ap import initialUeMessage, uplinkNasTransport
+from ...messages.rrc import rrcDlInformationTransfer
 from ...procedures.enb.s1ap import S1SetupProcedure
 from ...procedures.enb.rrc import RrcConnectionEstablishmentProcedureHandler
 
@@ -68,7 +68,7 @@ class Registered(EnbState):
 
     def handleIncomingMessage(self, source, interface, channelInfo, message):
         def handleRrcConnectionSetupEstablishmentProcedureMessages():
-            self.rrcConnectionEstablishmentProcedureHandler.handleIncomingMessage(
+            return self.rrcConnectionEstablishmentProcedureHandler.handleIncomingMessage(
                 source, interface, channelInfo, message)
 
         def handleUlInformationTransferMessage():
@@ -76,29 +76,34 @@ class Registered(EnbState):
             ue = self.uePool.ueByCrnti(channelInfo["cRnti"])
             self.ioService.sendMessage(self.mmeAddress, *uplinkNasTransport(
                 ue.enbUeS1apId, ue.mmeUeS1apId, nasPdu, None))
+            return True
 
         def handleDownlinkNasTransportMessage():
             dedicatedInfoNas = message["nasPdu"]
             ue = self.uePool.ueByEnbUeS1apId(message["enbUeS1apId"])
             self.ioService.sendMessage(ue.address, *rrcDlInformationTransfer(
                 dedicatedInfoNas))
+            return True
         mapping = (
-            ("uu", RRC_CONNECTION_SETUP_ESTABLISHMENT_PROCEDURE_MESSAGES, handleRrcConnectionSetupEstablishmentProcedureMessages),
-            ("uu", ("rrcUlInformationTransfer",), handleUlInformationTransferMessage),
-            ("s1", ("downlinkNasTransport",), handleDownlinkNasTransportMessage),
+            ("uu", ("randomAccessPreamble", "rrcConnectionRequest", "rrcConnectionSetupComplete"),
+                handleRrcConnectionSetupEstablishmentProcedureMessages),
+            ("uu", ("rrcUlInformationTransfer",),
+                handleUlInformationTransferMessage),
+            ("s1", ("downlinkNasTransport",),
+                handleDownlinkNasTransportMessage),
         )
         for i, m, f in mapping:
             if interface == i and message["messageType"] in m:
-                f()
-                return True
+                return f()
+        return False
 
     def __onNewRrcConnectionEstablishment__(self, address, cRnti, args):
         enbUeS1apId = self.enbUeS1apIdGenerator.next()
         rrcEstablishmentCause = args["rrcEstablishmentCause"]
         ue = self.Ue(address, cRnti, enbUeS1apId, rrcEstablishmentCause)
         self.uePool.addUe(ue)
-        nasPdu = args["dedicatedNasInfo"]
-        gummei = self.config.getValue["mme.servedGummeis"][0]
+        nasPdu = args["dedicatedInfoNas"]
+        gummei = self.config.getValue("mme.properties.servedGummeis")[0]
         self.ioService.sendMessage(self.mmeAddress, *initialUeMessage(
             enbUeS1apId, nasPdu, None, None, rrcEstablishmentCause, None, None, gummei, None))
 

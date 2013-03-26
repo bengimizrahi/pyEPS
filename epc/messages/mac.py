@@ -7,7 +7,7 @@ randomAccessPreamble = lambda raRnti, rapid: (
      "raRnti" : raRnti  # between 1 and 10 (the subframe in which the message is xmitted)
     },
     {
-     "messageName": "randomAccessPreamble",
+     "messageType": "randomAccessPreamble",
      "rapid": rapid
     }
 )
@@ -22,7 +22,7 @@ randomAccessResponse = \
          "raRnti" : raRnti   # the crc bits of pdcch are scrambled by raRnti
          },
          {
-          "messageName": "randomAccessResponse",
+          "messageType": "randomAccessResponse",
           "rapid": rapid,  # number between 1 and 64
           "uplinkGrant": uplinkGrant,
           "temporaryCrnti": temporaryCrnti
@@ -39,7 +39,7 @@ contentionResolutionIdentity = \
          "C-RNTI": cRnti  # the PDCCH CRC bits are scrambled by the temporary CRNTI
         },
         {
-         "messageName" : "contentionResolutionIdentity",
+         "messageType" : "contentionResolutionIdentity",
          "echoedMessage": messageContent
         }
 )

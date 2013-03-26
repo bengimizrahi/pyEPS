@@ -119,14 +119,15 @@ class RrcConnectionEstablishmentProcedureHandler(object):
         del self.ongoingRrcEstablishmentProcedures[cRnti]
 
     def handleIncomingMessage(self, source, interface, channelInfo, message):
-        if message["messageType"] == "randomAccessRequest":
+        if message["messageType"] == "randomAccessPreamble":
             self.kpis["numRandomAccessRequestsReceived"] += 1
             temporaryCrnti = self.__generateTemporaryCrnti__()
             uplinkGrant = self.__generateUplinkGrant__()
             raRnti = channelInfo["raRnti"]
             rapid = message["rapid"]
             self.__sendRandomAccessResponse__(source, raRnti, rapid, temporaryCrnti, uplinkGrant)
-        if message["messageType"] == "rrcConnectionRequest":
+            return True
+        elif message["messageType"] == "rrcConnectionRequest":
             self.kpis["numRrcConnectionRequestsReceived"] += 1
             cRnti = channelInfo["cRnti"]
             rrcTransactionIdentifier = self.__generateRrcTransactionIdentifier__()
@@ -135,7 +136,8 @@ class RrcConnectionEstablishmentProcedureHandler(object):
                 self.ioService, self.__procedureCompleteCallback__)
             self.ongoingRrcEstablishmentProcedures[cRnti].handleRrcEstablishmentMessage(source, interface,
                 channelInfo, message, {"rrcTransactionIdentifier": rrcTransactionIdentifier})
-        if message["messageType"] == "rrcConnectionSetupComplete":
+            return True
+        elif message["messageType"] == "rrcConnectionSetupComplete":
             self.kpis["numRrcConnectionSetupCompletesReceived"] += 1
             rrcTransactionIdentifier = message["rrcTransactionIdentifier"]
             if rrcTransactionIdentifier in self.rrcTransactionIdToCrntiMapping:
@@ -144,3 +146,5 @@ class RrcConnectionEstablishmentProcedureHandler(object):
                     channelInfo, message)
             else:
                 print "Transaction Identifier {} not provided by this eNB. Message ignored:{}".format(rrcTransactionIdentifier, message)
+            return True
+        return False

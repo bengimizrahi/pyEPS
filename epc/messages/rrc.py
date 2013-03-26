@@ -1,8 +1,3 @@
-RRC_CONNECTION_SETUP_ESTABLISHMENT_PROCEDURE_MESSAGES = ("randomAccessRequest",
-    "randomAccessResponse", "rrcConnectionRequest", "contentionResolutionIdentity",
-    "rrcConnectionSetup", "rrcConnectionSetupComplete")
-
-
 rrcConnectionRequest = \
     lambda cRnti, ueIdentityType, ueIdentityValue, rrcEstablishmentCause: (
         "uu",
