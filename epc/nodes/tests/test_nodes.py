@@ -72,9 +72,6 @@ class TestS1Interface(unittest.TestCase):
         ueIoService = IoService("ue", 9001)
         ueIoService.start()
         rrcProcedure = RrcConnectionEstablishmentProcedure({
-            "initialNasMessage": {
-                "nasMessageType": "attachRequest"
-            },
             "maxPrachPreambleAttempts": 5,
             "prachPreambleRepeatDelay": 0.7,
             "macContentionResolutionTimeout": 0.5,
@@ -83,7 +80,10 @@ class TestS1Interface(unittest.TestCase):
             "ueIdentityType": "randomValue",
             "ueIdentityValue": 3434,
             "rrcEstablishmentCause": "moSignaling",
-            "selectedPlmnIdentity": 2801
+            "selectedPlmnIdentity": 2801,
+            "initialNasMessage": {
+                "nasMessageType": "attachRequest"
+            },
         })
         rrcProcedure.execute()
         time.sleep(2)
