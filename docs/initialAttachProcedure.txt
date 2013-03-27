@@ -2,3 +2,10 @@
 [OK] Authentication Information Retrieval Procedure between MME and HSS
 [OK] Tunnel Management handling between MME and SGW-PGW
 [OK] S1 Setup Procedure handling between eNB and MME
+[OK] Initial Security Activation Procedure eNB and UE
+[  ] Initial Context Setup
+[  ] RRC Reconfiguration Setup
+[  ] Modify Bearer Request/Response
+[  ] Auhentication Procedure between MME and UE
+[  ] NAS Security Setup Procedure between MME and UE
+[  ] Obtain UEs radio capabilities
