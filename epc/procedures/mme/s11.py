@@ -31,7 +31,7 @@ class S11CreateSessionRequestProcedureHandler(object):
     def handleIncomingMessage(self, source, interface, channelInfo, message):
         imsi = message["imsi"]
         self.waitForResponseTimer[imsi].cancel()
-        self.__notifyProcedureCompletion__(self.Success)
+        self.__notifyProcedureCompletion__(self.Success, message["cause"])
 
     def __sendCreateSessionRequest__(self, imsi):
         self.attemptNumber[imsi] += 1
@@ -47,7 +47,7 @@ class S11CreateSessionRequestProcedureHandler(object):
         else:
             self.__notifyProcedureCompletion__(self.ErrorNoCreateSessionResponse)
 
-    def __notifyProcedureCompletion__(self, result):
-        self.procedureCompletionCallback(result)
+    def __notifyProcedureCompletion__(self, result, responseMessageCause=None):
+        self.procedureCompletionCallback(result, responseMessageCause)
         
     

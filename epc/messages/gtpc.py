@@ -25,7 +25,7 @@ def bearerContextToBeCreatedIE(interface, procedure, messageParameters):
     
 def createSessionResponse(interface, procedure, gtpcHeaderTeid, sequenceNumber, message): 
     if (interface == "s11" and procedure == "eutranInitialAttach"):
-        requiredIEs = ("imsi", "senderFteidForControlPlane", "pgwS5S8FteidForContolPlane", 
+        requiredIEs = ("cause", "imsi", "senderFteidForControlPlane", "pgwS5S8FteidForContolPlane", 
                        "pdnAddressAllocation", "bearerContextsCreated")
         missingIEs = set(requiredIEs) - set(message)
         if missingIEs:
