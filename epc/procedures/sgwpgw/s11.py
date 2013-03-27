@@ -4,6 +4,13 @@ class S11CreateSessionRequestProcedureHandler(object):
 
     Success, ErrorDuplicateCreateSessionRequest, ErrorDuplicateCreateSessionRequestwMismatchSequenceNumber, ErrorBearerResourcesNotAllocated = range(4)
 
+# to dos:
+#       1. handling of duplicate create session request to TEID 0 in header. From 29.274:
+#          If the new Create Session Request message is received with TEID 0 in the header 
+#          for an existing active PDN connection context, this Create Session Request message 
+#          shall be treated as a request for a new session. 
+#          The existing PDN connection context should be deleted locally, before a new session is created.
+
     def __init__(self, mmeAddressPort, sgwAddress, ioService, bearerResourceHandler, procedureCompletionCallback):
         self.mmeAddressPort = mmeAddressPort
         self.sgwAddress = sgwAddress
@@ -22,14 +29,23 @@ class S11CreateSessionRequestProcedureHandler(object):
         self.pgwAddress = message["pgwS5S8AddressForContolPlane"]["address"]
         self.gtpcHeaderSequenceNumber = channelInfo["sequenceNumber"]
         if self.imsi in self.establishedS11SessionContexts:
-            if self.establishedS11SessionContexts[self.imsi]["gtpcHeaderSequenceNumber"] == \
-                                     channelInfo["sequenceNumber"]:
-                self.__sendCreateSessionResponseMessage__()                 # this is a duplicate request, send previous response
+            if self.establishedS11SessionContexts[self.imsi]["gtpcHeaderSequenceNumber"] == channelInfo["sequenceNumber"] and \
+                                    channelInfo["headerTeid"] == 0 :
+                self.__sendCreateSessionResponseMessage__("requestAccepted")                 # this is a duplicate request, send previous response
                 self.result = self.ErrorDuplicateCreateSessionRequest
                 self.__notifyProcedureCompletion__()
                 return
+            elif self.establishedS11SessionContexts[self.imsi]["gtpcHeaderSequenceNumber"] != channelInfo["sequenceNumber"] and \
+                                    channelInfo["headerTeid"] == 0 :
+                # Handling of duplicate create session request to TEID 0 in header. From 29.274:
+                #          If the new Create Session Request message is received with TEID 0 in the header 
+                #          for an existing active PDN connection context, this Create Session Request message 
+                #          shall be treated as a request for a new session. 
+                #          The existing PDN connection context should be deleted locally, before a new session is created.
+                del self.establishedS11SessionContexts[self.imsi]
+                self.bearerResourceHandler.deleteBearerResources(self.imsi)
             else:
-                raise Exception("S11 session already exists for {} and Sequence number in Session Request Message does not match".format(self.imsi))
+                raise Exception("Duplicate Create Session Request sent to tunnel id not equal to 0")
         self.__allocatePdnConnectionIpAddress__(self.imsi, message["pdnAddressAllocation"])
         self.bearerResourceHandler.allocateBearerResources(self.imsi, message["bearerContextsToBeCreated"], self.__handleBearerResourcesAllocated__)
 
@@ -46,33 +62,45 @@ class S11CreateSessionRequestProcedureHandler(object):
                  "sgwFteidForControlPlane": {"interfaceType": "ipv4", "teid": self.nextSgwFteidForControlPlane, "address": self.sgwAddress},
                  "pgwS5S8FteidForContolPlane": {"interfaceType": "ipv4", "teid": self.nextPgwFteidForControlPlane, "address": self.pgwAddress},
                  "bearerContexts": bearerContexts,
-                 "pdnAddressAllocation": self.pdnAddressAllocation
+                 "pdnAddressAllocation": self.pdnAddressAllocation,
+                 "gtpcHeaderSequenceNumber": self.gtpcHeaderSequenceNumber
                 }
             self.nextSgwFteidForControlPlane += 1
             self.nextPgwFteidForControlPlane += 1
-            self.__sendCreateSessionResponseMessage__()
+            self.__sendCreateSessionResponseMessage__("requestAccepted")
             self.result = self.Success
         else:
+            self.__sendCreateSessionResponseMessage__("requestRejected")           
             self.result = self.ErrorBearerResourcesNotAllocated
+            del  self.establishedS11SessionContexts[imsi]
         self.__notifyProcedureCompletion__()
  
-    def __sendCreateSessionResponseMessage__(self):
+    def __sendCreateSessionResponseMessage__(self, cause):
         imsi = self.imsi
-        self.ioService.sendMessage(self.mmeAddressPort, *createSessionResponse(
-                "s11", "eutranInitialAttach", self.establishedS11SessionContexts[imsi]["mmeFteidForControlPlane"]["teid"], 
-                self.gtpcHeaderSequenceNumber,
-                {"imsi": imsi, 
+        if cause != "requestAccepted":
+            message = {"cause": cause,
+                       "imsi": imsi
+                       }
+        else:
+            message = \
+                {"cause": cause,
+                 "imsi": imsi, 
                  "senderFteidForControlPlane": self.establishedS11SessionContexts[imsi]["sgwFteidForControlPlane"], 
                  "pgwS5S8FteidForContolPlane": self.establishedS11SessionContexts[imsi]["pgwS5S8FteidForContolPlane"], 
                  "pdnAddressAllocation": self.establishedS11SessionContexts[imsi]["pdnAddressAllocation"],
                  "bearerContextsCreated": self.establishedS11SessionContexts[imsi]["bearerContexts"]
-                }))
+                 }
+        self.ioService.sendMessage(self.mmeAddressPort, *createSessionResponse(
+                "s11", "eutranInitialAttach", self.establishedS11SessionContexts[imsi]["mmeFteidForControlPlane"]["teid"], 
+                self.gtpcHeaderSequenceNumber,
+                message))
 
     def __notifyProcedureCompletion__(self):
         if self.result == self.Success:
             self.procedureCompletionCallback(self.result, self.establishedS11SessionContexts[self.imsi])
         else:
             self.procedureCompletionCallback(self.result)
+
 
 class BearerResourceHandler(object):
         
@@ -121,6 +149,11 @@ class BearerResourceHandler(object):
             self.nextS5S8uPgwFteid += 1
         result = self.Success
         self.__notifyProcedureCompletion__(result)
+
+    def deleteBearerResources(self, imsi):
+        if imsi not in self.bearerContexts:
+            raise Exception("Request to delete bearer resource when no bearer resource exist for imsi: {}".format(imsi))
+        del self.bearerContexts[imsi]
 
     def __notifyProcedureCompletion__(self,result):        
         if result == self.Success:

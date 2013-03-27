@@ -56,7 +56,7 @@ class TestGtpcCreateSessionProcedureHandler(unittest.TestCase):
         self.sgwPgwIoService.stop()
         self.mmeIoService.stop()
 
-    def __mmeCreateSessionCompleteCallback__(self, result):
+    def __mmeCreateSessionCompleteCallback__(self, result, responseMessageCause=None):
         self.mmeResult = result
         if result == MmeCreateSessionHandler.Success:
             self.mmeSuccessCount += 1
@@ -130,6 +130,32 @@ class TestGtpcCreateSessionProcedureHandler(unittest.TestCase):
         self.assertEqual(self.mmeResult, MmeCreateSessionHandler.Success)
         self.assertEqual(self.sgwPgwResult, SgwPgwCreateSessionHandler.Success)
 
+    def test_DuplicateCreateSessionRequestProcedureSuccess(self):
+        mmeCreateSessionHandler = MmeCreateSessionHandler((localhost(), 9000), self.mmeIoService, 0.5, 3, self.__mmeCreateSessionCompleteCallback__)
+        self.mmeIoService.addIncomingMessageCallback(mmeCreateSessionHandler.handleIncomingMessage)        
+        sgwPgwBearerResourceHandler = SgwPgwBearerResourceHandler(localhost(), localhost())
+        sgwPgwCreateSessionHandler = SgwPgwCreateSessionHandler((localhost(), 9001), localhost(), self.sgwPgwIoService, 
+                                                          sgwPgwBearerResourceHandler, self.__sgwPgwCreateSessionCompleteCallback__)
+        self.sgwPgwIoService.addIncomingMessageCallback(sgwPgwCreateSessionHandler.handleCreateSessionRequestMessage)
+        imsi = "35353"
+        createSessionRequestMessage = \
+            {"imsi": imsi,
+             "senderFteidForControlPlane": {"interfaceType": "ipv4", "teid": 45, "address": localhost()},
+             "pgwS5S8AddressForContolPlane": {"interfaceType": "ipv4", "teid": 0, 
+                                              "address": localhost()}, 
+             "pdnAddressAllocation": {"pdnType": "ipv4", "pdnAddressAndPrefix": "0.0.0.0"},
+             "bearerContextsToBeCreated": [{"epsBearerId": 0, 
+                                           "bearerLevelQos": None}]
+            }
+        mmeCreateSessionHandler.execute(imsi, createSessionRequestMessage)
+        time.sleep(1.0)
+        self.assertEqual(self.mmeResult, MmeCreateSessionHandler.Success)
+        self.assertEqual(self.sgwPgwResult, SgwPgwCreateSessionHandler.Success)
+        mmeCreateSessionHandler.execute(imsi, createSessionRequestMessage)  # send duplicate message but with a new sequence number
+        time.sleep(1.0)
+        self.assertEqual(self.mmeResult, MmeCreateSessionHandler.Success)
+        self.assertEqual(self.sgwPgwResult, SgwPgwCreateSessionHandler.Success)
+
     def test_nCreateSessionProcedureSuccess(self):
         mmeCreateSessionHandler = MmeCreateSessionHandler((localhost(), 9000), self.mmeIoService, 0.5, 3, self.__mmeCreateSessionCompleteCallback__)
         self.mmeIoService.addIncomingMessageCallback(mmeCreateSessionHandler.handleIncomingMessage)        
@@ -151,6 +177,7 @@ class TestGtpcCreateSessionProcedureHandler(unittest.TestCase):
                                                "bearerLevelQos": None}]
                 }
             mmeCreateSessionHandler.execute(imsi, createSessionRequestMessage)
+            time.sleep(0.01)
         time.sleep(1.0)
         self.assertEqual(self.mmeSuccessCount, 100)
         self.assertEqual(set(sgwPgwCreateSessionHandler.establishedS11SessionContexts), set(imsiArray))

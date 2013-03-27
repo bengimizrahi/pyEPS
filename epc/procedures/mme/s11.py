@@ -13,25 +13,23 @@ class S11CreateSessionRequestProcedureHandler(object):
         self.nextGtpcHeaderSequenceNumber = 0
         self.nextSenderTeidForControlPlane = 0
         self.outstandingRequests = {}
-        self.establishedS11Sessions = {}
         self.attemptNumber = {}
         self.sequenceNumber = {}
         self.message = {}
         self.waitForResponseTimer = {}
 
     def execute(self, imsi, createSessionRequestMessage):
-        if imsi in self.establishedS11Sessions:
-            raise Exception("S11 GTPC Session already established for {}".format(imsi))
         self.attemptNumber[imsi] = 0
         self.sequenceNumber[imsi] = self.nextGtpcHeaderSequenceNumber
         self.outstandingRequests[self.nextGtpcHeaderSequenceNumber] = {"imsi": imsi}
+        self.nextGtpcHeaderSequenceNumber += 1
         self.sessionRequestMessage = createSessionRequestMessage
         self.__sendCreateSessionRequest__(imsi)
 
     def handleIncomingMessage(self, source, interface, channelInfo, message):
         imsi = message["imsi"]
         self.waitForResponseTimer[imsi].cancel()
-        self.__notifyProcedureCompletion__(self.Success)
+        self.__notifyProcedureCompletion__(self.Success, message["cause"])
 
     def __sendCreateSessionRequest__(self, imsi):
         self.attemptNumber[imsi] += 1
@@ -47,7 +45,7 @@ class S11CreateSessionRequestProcedureHandler(object):
         else:
             self.__notifyProcedureCompletion__(self.ErrorNoCreateSessionResponse)
 
-    def __notifyProcedureCompletion__(self, result):
-        self.procedureCompletionCallback(result)
+    def __notifyProcedureCompletion__(self, result, responseMessageCause=None):
+        self.procedureCompletionCallback(result, responseMessageCause)
         
     
