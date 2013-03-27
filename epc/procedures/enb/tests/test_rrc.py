@@ -18,7 +18,7 @@ class TestEnbRrcConnectionProcedure(unittest.TestCase):
     def tearDown(self):
         [s.stop() for s in self.enbIoService, self.ueIoService]
 
-    def __procedureEnbCompleteCallback__(self, result, a, b, args=None):
+    def __procedureEnbCompleteCallback__(self, result, addr, a, b, args=None):
         self.enbResult = result
 
     def test_noRrcConnectionSetupCompleteReceived(self):
