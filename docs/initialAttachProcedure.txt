@@ -1,0 +1,4 @@
+[OK] RRC Connection Setup Procedure handling between UE and eNB
+[OK] Authentication Information Retrieval Procedure between MME and HSS
+[OK] Tunnel Management handling between MME and SGW-PGW
+[OK] S1 Setup Procedure handling between eNB and MME
