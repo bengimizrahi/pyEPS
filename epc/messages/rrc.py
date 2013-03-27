@@ -80,3 +80,48 @@ rrcDlInformationTransfer = lambda dedicatedInfoNas: (
      "dedicatedInfoNas": dedicatedInfoNas
     }
 )
+
+securityModeCommand = \
+    lambda rrcTransactionIdentifier, cipheringAlgorithm, integrityProtAlgorithm: (
+    "uu",
+    {
+     "physicalChannel": "pusch",
+     "transportChannel": "ul-sch",
+     "logicalChannel": "dcch",
+     "lcid": "srb1"
+    },
+    {
+     "messageType": "securityModeCommand",
+     "rrcTransactionIdentifier": rrcTransactionIdentifier,
+     "cipheringAlgorithm": cipheringAlgorithm,
+     "integrityProtAlgorithm": integrityProtAlgorithm
+    }
+)
+
+securityModeComplete = lambda rrcTransactionIdentifier: (
+    "uu",
+    {
+     "physicalChannel": "pusch",
+     "transportChannel": "ul-sch",
+     "logicalChannel": "dcch",
+     "lcid": "srb1"
+    },
+    {
+     "messageType": "securityModeComplete",
+     "rrcTransactionIdentifier": rrcTransactionIdentifier,
+    }
+)
+
+securityModeFailure = lambda rrcTransactionIdentifier: (
+    "uu",
+    {
+     "physicalChannel": "pusch",
+     "transportChannel": "ul-sch",
+     "logicalChannel": "dcch",
+     "lcid": "srb1"
+    },
+    {
+     "messageType": "securityModeFailure",
+     "rrcTransactionIdentifier": rrcTransactionIdentifier,
+    }
+)
