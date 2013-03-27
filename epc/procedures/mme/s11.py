@@ -13,18 +13,16 @@ class S11CreateSessionRequestProcedureHandler(object):
         self.nextGtpcHeaderSequenceNumber = 0
         self.nextSenderTeidForControlPlane = 0
         self.outstandingRequests = {}
-        self.establishedS11Sessions = {}
         self.attemptNumber = {}
         self.sequenceNumber = {}
         self.message = {}
         self.waitForResponseTimer = {}
 
     def execute(self, imsi, createSessionRequestMessage):
-        if imsi in self.establishedS11Sessions:
-            raise Exception("S11 GTPC Session already established for {}".format(imsi))
         self.attemptNumber[imsi] = 0
         self.sequenceNumber[imsi] = self.nextGtpcHeaderSequenceNumber
         self.outstandingRequests[self.nextGtpcHeaderSequenceNumber] = {"imsi": imsi}
+        self.nextGtpcHeaderSequenceNumber += 1
         self.sessionRequestMessage = createSessionRequestMessage
         self.__sendCreateSessionRequest__(imsi)
 
