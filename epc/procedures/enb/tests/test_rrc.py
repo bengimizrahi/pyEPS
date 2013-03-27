@@ -3,7 +3,9 @@ import time
 
 from epc.utils.io import IoService, localhost
 from epc.procedures.enb.rrc import RrcConnectionEstablishmentProcedure as EnbRrcConnectionEstablishmentProcedure
-from epc.messages.rrc import rrcConnectionRequest, rrcConnectionSetupComplete
+from epc.procedures.enb.rrc import InitialSecurityActivationProcedureHandler as EnbInitialSecurityActivationProcedureHandler
+from epc.messages.rrc import rrcConnectionRequest, rrcConnectionSetupComplete,\
+    securityModeComplete
 
 
 class TestEnbRrcConnectionProcedure(unittest.TestCase):
@@ -73,6 +75,28 @@ class TestEnbRrcConnectionProcedure(unittest.TestCase):
         self.enbProcedure.handleRrcEstablishmentMessage((localhost(), 9001),  interface, channelInfo, message)
         time.sleep(0.2)
         self.assertEqual(self.enbResult, None)
+
+
+class TestEnbInitialSecurityActivationProcedure(unittest.TestCase):
+
+    def setUp(self):
+        self.enbIoService = IoService("enb", 9000)
+        self.ueIoService = IoService("ue", 9001)
+        [s.start() for s in self.enbIoService, self.ueIoService]
+        self.enbProcedure = EnbInitialSecurityActivationProcedureHandler(
+            self.enbIoService, self.__procedureCompleteCallback__)
+        self.enbIoService.addIncomingMessageCallback(self.enbProcedure.handleIncomingMessage)
+        self.result = None
+
+    def __procedureCompleteCallback__(self, result, rrcTransactionIdentifier):
+        self.result = result
+
+    def test_procedureSuccessful(self):
+        self.enbProcedure.start((localhost(), 9001), 0, "cipherAlgo", "integProtAlgo")
+        time.sleep(0.1)
+        self.ueIoService.sendMessage("enb", *securityModeComplete(0))
+        time.sleep(0.1)
+        self.assertEqual(self.result, EnbInitialSecurityActivationProcedureHandler.Complete)
 
 
 if __name__ == "__main__":
