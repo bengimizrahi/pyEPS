@@ -1,8 +1,9 @@
 import random
 from collections import Counter
 
-from ...messages.rrc import rrcConnectionSetup
+from ...messages.rrc import rrcConnectionSetup, securityModeCommand
 from ...messages.mac import randomAccessResponse, contentionResolutionIdentity
+
 
 class RrcConnectionEstablishmentProcedure(object):
 
@@ -148,3 +149,37 @@ class RrcConnectionEstablishmentProcedureHandler(object):
                 print "Transaction Identifier {} not provided by this eNB. Message ignored:{}".format(rrcTransactionIdentifier, message)
             return True
         return False
+
+
+class InitialSecurityActivationProcedureHandler:
+
+    Complete, Failure = range(2)
+
+    def __init__(self, ioService, procedureCompletionCallback):
+        self.ioService = ioService
+        self.procedureCompletionCallback = procedureCompletionCallback
+        self.outstandingProcedures = set()
+
+    def start(self, ueAddress, rrcTransactionIdentifier, cipheringAlgorithm, integrityProtAlgorithm):
+        self.ioService.sendMessage(ueAddress, *securityModeCommand(
+            rrcTransactionIdentifier, cipheringAlgorithm, integrityProtAlgorithm))
+        self.outstandingProcedures.add(rrcTransactionIdentifier)
+
+    def handleIncomingMessage(self, source, interface, channelInfo, message):
+        def handleSecurityModeCompleteMessage():
+            rrcTransactionIdentifier = message["rrcTransactionIdentifier"]
+            self.outstandingProcedures.remove(rrcTransactionIdentifier)
+            self.procedureCompletionCallback(self.Complete, rrcTransactionIdentifier)
+            return True
+
+        def handleSecurityModeFailureMessage():
+            rrcTransactionIdentifier = message["rrcTransactionIdentifier"]
+            self.outstandingProcedures.remove(rrcTransactionIdentifier)
+            self.procedureCompletionCallback(self.Failure, rrcTransactionIdentifier)
+            return True
+        mapping = {
+            "securityModeComplete": handleSecurityModeCompleteMessage,
+            "securityModeFailure": handleSecurityModeFailureMessage,
+        }
+        messageType = message["messageType"]
+        mapping.get(messageType, lambda: False)()
