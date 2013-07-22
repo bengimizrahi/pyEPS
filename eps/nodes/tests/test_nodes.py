@@ -1,11 +1,11 @@
 import unittest
 import time
 
-from epc.utils.io import IoService, localhost
-from epc.utils.config import ConfigPath
-from epc.nodes.mme.mme import Mme
-from epc.nodes.enb.enb import Enb
-from epc.procedures.ue.rrc import RrcConnectionEstablishmentProcedure
+from ...utils.io import IoService, localhost
+from ...utils.config import ConfigPath
+from ...nodes.mme.mme import Mme
+from ...nodes.enb.enb import Enb
+from ...procedures.ue.rrc import RrcConnectionEstablishmentProcedure
 
 import logging
 for l in ("msgTrace", "assertions"):

@@ -1,6 +1,6 @@
 import unittest
 
-from epc.utils.statemachine import StateMachine, State
+from ...utils.statemachine import StateMachine, State
 
 
 class TestStateMachine(unittest.TestCase):
