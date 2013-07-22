@@ -1,9 +1,9 @@
 import unittest
 import time
 
-from epc.utils.io import IoService, localhost
-from epc.procedures.ue.rrc import RrcConnectionEstablishmentProcedure as UeRrcConnectionEstablishmentProcedure
-from epc.nodes.enb.enb import Enb
+from eps.utils.io import IoService, localhost
+from eps.procedures.ue.rrc import RrcConnectionEstablishmentProcedure as UeRrcConnectionEstablishmentProcedure
+from eps.nodes.enb.enb import Enb
 
 class TestUe2EnbRrcEstablishment(unittest.TestCase):
 

@@ -1,10 +1,10 @@
 import unittest
 import time
 
-from epc.utils.io import IoService, localhost
-from epc.procedures.mme.s11 import S11CreateSessionRequestProcedureHandler as MmeCreateSessionHandler
-from epc.procedures.sgwpgw.s11 import S11CreateSessionRequestProcedureHandler as SgwPgwCreateSessionHandler
-from epc.procedures.sgwpgw.s11 import BearerResourceHandler as SgwPgwBearerResourceHandler
+from eps.utils.io import IoService, localhost
+from eps.procedures.mme.s11 import S11CreateSessionRequestProcedureHandler as MmeCreateSessionHandler
+from eps.procedures.sgwpgw.s11 import S11CreateSessionRequestProcedureHandler as SgwPgwCreateSessionHandler
+from eps.procedures.sgwpgw.s11 import BearerResourceHandler as SgwPgwBearerResourceHandler
 
 class TestBearerResourcehandler(unittest.TestCase):
     

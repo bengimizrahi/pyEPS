@@ -2,9 +2,9 @@ import unittest
 import time
 import random
 
-from epc.utils.io import IoService, localhost
-from epc.procedures.mme.s6a import AuthenticationInformationRetrievalProcedureHandler as MmeAuthProcedureHandler
-from epc.procedures.hss.s6a import AuthenticationInformationRetrievalProcedureHandler as HssAuthProcedureHandler
+from eps.utils.io import IoService, localhost
+from eps.procedures.mme.s6a import AuthenticationInformationRetrievalProcedureHandler as MmeAuthProcedureHandler
+from eps.procedures.hss.s6a import AuthenticationInformationRetrievalProcedureHandler as HssAuthProcedureHandler
 
 
 class TestS1SetupProcedureHandler(unittest.TestCase):

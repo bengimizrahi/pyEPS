@@ -1,10 +1,10 @@
 import unittest
 import time
 
-from epc.utils.io import IoService, localhost
-from epc.procedures.ue.rrc import RrcConnectionEstablishmentProcedure
-from epc.messages.rrc import rrcConnectionSetup
-from epc.messages.mac import randomAccessResponse, contentionResolutionIdentity
+from eps.utils.io import IoService, localhost
+from eps.procedures.ue.rrc import RrcConnectionEstablishmentProcedure
+from eps.messages.rrc import rrcConnectionSetup
+from eps.messages.mac import randomAccessResponse, contentionResolutionIdentity
 
 class TestRrcConnectionProcedure(unittest.TestCase):
 

@@ -1,8 +1,8 @@
 import unittest
 import time
 
-from epc.utils.io import IoService
-from epc.utils.config import Configuration
+from eps.utils.io import IoService
+from eps.utils.config import Configuration
 
 
 class TestConfiguration(unittest.TestCase):

@@ -1,5 +1,5 @@
 from ...utils.statemachine import State
-from epc.procedures.mme.s1ap import S1SetupProcedureHandler
+from ...procedures.mme.s1ap import S1SetupProcedureHandler
 
 
 class MmeState(State):

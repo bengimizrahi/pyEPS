@@ -1,9 +1,9 @@
 import unittest
 import time
 
-from epc.utils.io import IoService, localhost
-from epc.messages.rrc import rrcConnectionRequest, rrcConnectionSetupComplete
-from epc.nodes.enb.enb import Enb
+from eps.utils.io import IoService, localhost
+from eps.messages.rrc import rrcConnectionRequest, rrcConnectionSetupComplete
+from eps.nodes.enb.enb import Enb
 
 import logging
 msgTraceLogger = logging.getLogger("msgTrace")
