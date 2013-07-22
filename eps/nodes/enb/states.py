@@ -1,11 +1,11 @@
 import logging
 
-from ...utils.statemachine import State
-from ...utils.helpers import idGenerator
-from ...messages.s1ap import initialUeMessage, uplinkNasTransport
-from ...messages.rrc import rrcDlInformationTransfer
-from ...procedures.enb.s1ap import S1SetupProcedure
-from ...procedures.enb.rrc import RrcConnectionEstablishmentProcedureHandler
+from eps.utils.statemachine import State
+from eps.utils.helpers import idGenerator
+from eps.messages.s1ap import initialUeMessage, uplinkNasTransport
+from eps.messages.rrc import rrcDlInformationTransfer
+from eps.procedures.enb.s1ap import S1SetupProcedure
+from eps.procedures.enb.rrc import RrcConnectionEstablishmentProcedureHandler
 
 assertionLogger = logging.getLogger("assertions")
 

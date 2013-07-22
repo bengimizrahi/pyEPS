@@ -1,4 +1,4 @@
-from ...messages.gtpc import createSessionResponse
+from eps.messages.gtpc import createSessionResponse
 
 class S11CreateSessionRequestProcedureHandler(object):
 
@@ -29,6 +29,7 @@ class S11CreateSessionRequestProcedureHandler(object):
         self.pgwAddress = message["pgwS5S8AddressForContolPlane"]["address"]
         self.gtpcHeaderSequenceNumber = channelInfo["sequenceNumber"]
         if self.imsi in self.establishedS11SessionContexts:
+            print "having request for duplicate imsi ()"
             if self.establishedS11SessionContexts[self.imsi]["gtpcHeaderSequenceNumber"] == channelInfo["sequenceNumber"] and \
                                     channelInfo["headerTeid"] == 0 :
                 self.__sendCreateSessionResponseMessage__("requestAccepted")                 # this is a duplicate request, send previous response

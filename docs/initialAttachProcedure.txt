@@ -10,10 +10,9 @@
 [  ] NAS Security Mode Command Procedure between MME and UE
 [  ] Location Update Procedure between MME and HSS
 [OK] Create Session Request/Response between MME and SGW-PGW
-[OK] RRC Security Mode Command Procedure eNB and UE
+[OK] RRC Security Mode Command Procedure between eNB and UE
 [  ] Obtain UEs radio capabilities
 [  ] RRC Connection Reconfiguration Procedure
 [  ] Initial UE Context Setup on S1AP
 [  ] Modify Bearer Request/Response between MME and SGW-PGW
-
-[OK] S1 Setup Procedure handling between eNB and MME 
+[  ]

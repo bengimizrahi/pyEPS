@@ -1,7 +1,7 @@
-from ...utils.io import IoService
-from ...utils.statemachine import StateMachine
-from ...utils.config import Configuration
-from ...nodes.enb.states import Deregistered
+from eps.utils.io import IoService
+from eps.utils.statemachine import StateMachine
+from eps.utils.config import Configuration
+from eps.nodes.enb.states import Deregistered
 
 # Configuration data model
 #

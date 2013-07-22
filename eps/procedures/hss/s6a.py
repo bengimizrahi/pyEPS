@@ -1,4 +1,4 @@
-from ...messages.s6a import authenticationInformationAnswer
+from eps.messages.s6a import authenticationInformationAnswer
 
 
 class AuthenticationInformationRetrievalProcedureHandler(object):

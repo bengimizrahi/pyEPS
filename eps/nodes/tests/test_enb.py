@@ -1,9 +1,9 @@
 import unittest
 import time
 
-from ...utils.io import IoService, localhost
-from ...messages.rrc import rrcConnectionRequest, rrcConnectionSetupComplete
-from ...nodes.enb.enb import Enb
+from eps.utils.io import IoService, localhost
+from eps.messages.rrc import rrcConnectionRequest, rrcConnectionSetupComplete
+from eps.nodes.enb.enb import Enb
 
 import logging
 msgTraceLogger = logging.getLogger("msgTrace")
@@ -13,7 +13,24 @@ msgTraceLogger.addHandler(logging.StreamHandler())
 class TestEnbRrcConnectionEstablishment(unittest.TestCase):
 
     def setUp(self):
-        self.enb = Enb("enb", 9000)
+        self.enb = Enb("enb", 9000, {
+            "control": {
+                "adminState": True,
+            },
+            "system": {
+                "globalEnbId": 345,
+                "enbName": "Taksim",
+                "supportedTas": [
+                    (127, ("28603", "28604")),
+                ],
+                "csgIdList": [],
+                "defaultPagingDrx": [32, 64, 128],
+            },
+            "rrc": {
+                "maxRrcConnectionSetupAttempts": 5,
+                "rrcConnectionSetupTimeout": 0.7,
+            },
+        })
         self.handler = self.enb.rrcConnectionEstablishmentProcedureHandler
         self.enb.execute()
         self.numUes = 20

@@ -1,10 +1,10 @@
 import unittest
 import time
 
-from ...utils.io import IoService, localhost
-from ...procedures.mme.s11 import S11CreateSessionRequestProcedureHandler as MmeCreateSessionHandler
-from ...procedures.sgwpgw.s11 import S11CreateSessionRequestProcedureHandler as SgwPgwCreateSessionHandler
-from ...procedures.sgwpgw.s11 import BearerResourceHandler as SgwPgwBearerResourceHandler
+from eps.utils.io import IoService, localhost
+from eps.procedures.mme.s11 import S11CreateSessionRequestProcedureHandler as MmeCreateSessionHandler
+from eps.procedures.sgwpgw.s11 import S11CreateSessionRequestProcedureHandler as SgwPgwCreateSessionHandler
+from eps.procedures.sgwpgw.s11 import BearerResourceHandler as SgwPgwBearerResourceHandler
 
 class TestBearerResourcehandler(unittest.TestCase):
     
@@ -177,7 +177,7 @@ class TestGtpcCreateSessionProcedureHandler(unittest.TestCase):
                                                "bearerLevelQos": None}]
                 }
             mmeCreateSessionHandler.execute(imsi, createSessionRequestMessage)
-            time.sleep(0.01)
+            time.sleep(0.1)
         time.sleep(1.0)
         self.assertEqual(self.mmeSuccessCount, 100)
         self.assertEqual(set(sgwPgwCreateSessionHandler.establishedS11SessionContexts), set(imsiArray))

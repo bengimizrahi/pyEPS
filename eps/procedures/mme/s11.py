@@ -1,4 +1,4 @@
-from ...messages.gtpc import createSessionRequest
+from eps.messages.gtpc import createSessionRequest
 
 class S11CreateSessionRequestProcedureHandler(object):
 

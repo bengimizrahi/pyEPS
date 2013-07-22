@@ -1,7 +1,7 @@
-from ...utils.io import IoService
-from ...utils.statemachine import StateMachine
-from ...utils.config import Configuration
-from ...nodes.mme.states import Default
+from eps.utils.io import IoService
+from eps.utils.statemachine import StateMachine
+from eps.utils.config import Configuration
+from eps.nodes.mme.states import Default
 
 # Configuration data model
 # {
