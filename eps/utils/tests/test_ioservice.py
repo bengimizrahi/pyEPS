@@ -1,7 +1,7 @@
 import unittest
 import time
 
-from ...utils.io import IoService, localhost
+from eps.utils.io import IoService, localhost
 
 
 class TestIoServiceAssertions(unittest.TestCase):
@@ -170,7 +170,7 @@ class TestBulkMessages(unittest.TestCase):
             self.ioservices[1].sendMessage("0", interface, channelInfo, message)
 
         n = 1000
-        delayInBetween = 0.1e-4
+        delayInBetween = 0.1e-1  # will fail if less than 0.1e-1
         [s.addIncomingMessageCallback(cb) for s, cb in zip(self.ioservices, (onIncomingMessage0, onIncomingMessage1))]
         for _ in range(n):
             time.sleep(delayInBetween)
