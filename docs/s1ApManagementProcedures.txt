@@ -1,2 +1,1 @@
-[OK] S1 Setup Procedure handling between eNB and MME 
-[  ]
+[OK] S1 Setup Procedure handling between eNB and MME

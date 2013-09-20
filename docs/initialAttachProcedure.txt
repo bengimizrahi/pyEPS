@@ -1,11 +1,12 @@
 [OK] RRC Connection Setup Procedure handling between UE and eNB
+[OK] Storage of UE Context Information in the eNB
 [  ] Initial UE message on S1AP
 [OK] Authentication Information Retrieval Procedure between MME and HSS
+[  ] Storage of UE Context Information in MME
 [  ] Downlink NAS Transport on S1AP
 [  ] Downlink Information transfer on RRC
 [  ] Uplink Information transfer on RRC
 [  ] Uplink NAS Transport on S1AP
-[  ] Authentication Procedure between MME and UE
 [  ] NAS Authentication Procedure between MME and UE
 [  ] NAS Security Mode Command Procedure between MME and UE
 [  ] Location Update Procedure between MME and HSS
@@ -15,4 +16,3 @@
 [  ] RRC Connection Reconfiguration Procedure
 [  ] Initial UE Context Setup on S1AP
 [  ] Modify Bearer Request/Response between MME and SGW-PGW
-[  ]

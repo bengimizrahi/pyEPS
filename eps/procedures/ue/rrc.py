@@ -1,7 +1,7 @@
 import random
 
-from ...messages.rrc import rrcConnectionRequest, rrcConnectionSetupComplete
-from ...messages.mac import randomAccessPreamble
+from eps.messages.rrc import rrcConnectionRequest, rrcConnectionSetupComplete
+from eps.messages.mac import randomAccessPreamble
 
 class RrcConnectionEstablishmentProcedure(object):
 

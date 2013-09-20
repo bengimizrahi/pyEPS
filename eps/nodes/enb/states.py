@@ -134,6 +134,9 @@ class Registered(EnbState):
         def removeUeByEnbUeS1apId(self, enbUeS1apId):
             self.removeUe(self.ueByEnbUeS1apId[enbUeS1apId])
 
+        def numUes(self):
+            return len(self.uesByCrnti)
+
 
     class Ue(object):
 

@@ -1,10 +1,10 @@
 import unittest
 import time
 
-from ...utils.io import IoService, localhost
-from ...procedures.enb.s1ap import S1SetupProcedure as EnbS1SetupProcedure
-from ...procedures.mme.s1ap import S1SetupProcedureHandler as MmeS1SetupProcedureHandler
-from ...nodes.mme.mme.Default import MmeServiceArea
+from eps.utils.io import IoService, localhost
+from eps.procedures.enb.s1ap import S1SetupProcedure as EnbS1SetupProcedure
+from eps.procedures.mme.s1ap import S1SetupProcedureHandler as MmeS1SetupProcedureHandler
+from eps.nodes.mme.mme.Default import MmeServiceArea
 
 class TestS1SetupProcedureHandler(unittest.TestCase):
 
