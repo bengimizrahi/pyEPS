@@ -1,8 +1,8 @@
 import random
 from collections import Counter
 
-from ...messages.rrc import rrcConnectionSetup, securityModeCommand
-from ...messages.mac import randomAccessResponse, contentionResolutionIdentity
+from eps.messages.rrc import rrcConnectionSetup, securityModeCommand
+from eps.messages.mac import randomAccessResponse, contentionResolutionIdentity
 
 
 class RrcConnectionEstablishmentProcedure(object):

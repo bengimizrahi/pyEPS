@@ -1,18 +1,41 @@
 import unittest
 import time
 
-from epc.utils.io import IoService, localhost
-from epc.procedures.ue.rrc import RrcConnectionEstablishmentProcedure as UeRrcConnectionEstablishmentProcedure
-from epc.nodes.enb.enb import Enb
+from eps.utils.io import IoService, localhost
+from eps.procedures.ue.rrc import RrcConnectionEstablishmentProcedure as UeRrcConnectionEstablishmentProcedure
+from eps.nodes.enb.enb import Enb
+from eps.utils.config import ConfigPath
+from eps.nodes.mme.mme import Mme
 
 class TestUe2EnbRrcEstablishment(unittest.TestCase):
 
     def setUp(self):
-        self.mmeIoService = IoService("mme", 8999)
-        self.mmeIoService.start()
+        self.mme = Mme("mme", 8999, {
+            "system": {
+                "mmeName": "Istanbul",
+                "servedGummeis": [
+                    (("28603", "28604"), (0, 1, 2), (23, 58, 127)),
+                    (("00108"), (0,), (12, 13, 14)),
+                ],
+                "maximumEnbsAllowed": 2,
+            },
+            "s1": {
+                "s1SetupTimeToWait": 1,
+            },
+        })
+        self.mme.execute()
         self.enb = Enb("enb", 9000, {
             "control": {
                 "adminState": True,
+            },
+            "system": {
+                "globalEnbId": 345,
+                "enbName": "Taksim",
+                "supportedTas": [
+                    (127, ("28603", "28604")),
+                ],
+                "csgIdList": [],
+                "defaultPagingDrx": [32, 64, 128],
             },
             "rrc": {
                 "maxRrcConnectionSetupAttempts": 5,
@@ -20,25 +43,12 @@ class TestUe2EnbRrcEstablishment(unittest.TestCase):
             },
             "mme": {
                 "address": (localhost(), 8999),
-                "s1SetupParameters": {
-                    "mmeName": "Istanbul",
-                    "servedGummeis": [
-                        (("28603", "28604"), (0, 1, 2), (23, 58, 127)),
-                        (("00108"), (0,), (12, 13, 14)),
-                    ],
-                    "timeToWait": 1,
-                    "flags": {
-                        "rejectS1SetupRequestsFromRegisteredEnbs": True
-                    },
-                    "criticalityDiagnostics": None,
-                },
+                "s1SetupParameters": ConfigPath("system"),
                 "properties": None,
-            }
-        })
-        procedureParameters = {
-            "initialNasMessage": {
-             "nasMessageType": "attachRequest"
             },
+        })
+        self.enb.execute()
+        procedureParameters = {
             "maxPrachPreambleAttempts": 5,
             "prachPreambleRepeatDelay": 0.7,
             "macContentionResolutionTimeout": 0.5,
@@ -46,23 +56,14 @@ class TestUe2EnbRrcEstablishment(unittest.TestCase):
         }
         args = lambda i: {
             "ueIdentityType": "randomValue",
-            "ueIdentityValue": 3434 + i,
+            "ueIdentityValue": 3434,
             "rrcEstablishmentCause": "moSignaling",
-            "selectedPlmnIdentity": 2801
-        }
-        self.enb.execute()
-        mmeParameter = {
-            "mmeName": "Istanbul",
-            "servedGummeis": [
-                (("28603", "28604"), (0, 1, 2), (23, 58, 127)),
-                (("00108"), (0,), (12, 13, 14)),
-            ],
-            "timeToWait": 1,
-            "flags": {
-                "rejectS1SetupRequestsFromRegisteredEnbs": True
+            "selectedPlmnIdentity": 2801,
+            "initialNasMessage": {
+                "nasMessageType": "attachRequest"
             },
-            "criticalityDiagnostics": None,
         }
+
         self.ueIoServices = [IoService(str(i), 9001 + i) for i in range(20)]
         [s.start() for s in self.ueIoServices]
         self.ueProcedures = [UeRrcConnectionEstablishmentProcedure(procedureParameters, (localhost(), 9000),
@@ -71,27 +72,22 @@ class TestUe2EnbRrcEstablishment(unittest.TestCase):
 
     def tearDown(self):
         [s.stop() for s in self.ueIoServices]
-        self.enbIoService.stop()
-
+        [n.terminate() for n in (self.enb, self.mme)]
+        
     def __procedureCompleteCallback__(self, result):
         self.numSuccess += 1
 
     def test_singleUeRrcEstablishmentSuccess(self):
-        self.enbProcedure.execute()
+        time.sleep(0.1) # Wait for S1 Setup
         self.ueProcedures[0].execute()
         time.sleep(3)
         self.assertEqual(self.numSuccess, 1)
-        print "UE context information in eNB"
-        print self.enbProcedure.ueContext       
 
-    def test_twoUeRrcEstablishmentSuccess(self):
-        self.enbProcedure.execute()
+    def test_multipleUeRrcEstablishmentSuccess(self):
+        time.sleep(0.1) # Wait for S1 Setup
         [p.execute() for p in self.ueProcedures]
         time.sleep(3)
-        self.assertEqual(self.numSuccess, 2)
-        print "UE context information in eNB"
-        print self.enbProcedure.ueContext       
-
+        self.assertEqual(self.numSuccess, 20)
 
 if __name__ == "__main__":
     unittest.main()

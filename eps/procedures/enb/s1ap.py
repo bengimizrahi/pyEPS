@@ -1,4 +1,4 @@
-from ...messages.s1ap import s1SetupRequest
+from eps.messages.s1ap import s1SetupRequest
 
 
 class S1SetupProcedure(object):

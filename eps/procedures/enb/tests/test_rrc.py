@@ -1,10 +1,10 @@
 import unittest
 import time
 
-from epc.utils.io import IoService, localhost
-from epc.procedures.enb.rrc import RrcConnectionEstablishmentProcedure as EnbRrcConnectionEstablishmentProcedure
-from epc.procedures.enb.rrc import InitialSecurityActivationProcedureHandler as EnbInitialSecurityActivationProcedureHandler
-from epc.messages.rrc import rrcConnectionRequest, rrcConnectionSetupComplete,\
+from eps.utils.io import IoService, localhost
+from eps.procedures.enb.rrc import RrcConnectionEstablishmentProcedure as EnbRrcConnectionEstablishmentProcedure
+from eps.procedures.enb.rrc import InitialSecurityActivationProcedureHandler as EnbInitialSecurityActivationProcedureHandler
+from eps.messages.rrc import rrcConnectionRequest, rrcConnectionSetupComplete,\
     securityModeComplete
 
 

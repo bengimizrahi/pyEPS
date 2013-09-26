@@ -1,4 +1,4 @@
-from ...messages.s1ap import s1SetupResponse, s1SetupFailure
+from eps.messages.s1ap import s1SetupResponse, s1SetupFailure
 
 
 class S1SetupProcedureHandler(object):

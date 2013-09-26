@@ -1,4 +1,4 @@
-from ...messages.gtpc import createSessionResponse
+from eps.messages.gtpc import createSessionResponse
 
 class S11CreateSessionRequestProcedureHandler(object):
 
@@ -128,7 +128,6 @@ class BearerResourceHandler(object):
             requestedBearerIds.append(bearer["epsBearerId"])
         overlapBearerIds = set.intersection(set(existingBearerIds), set(requestedBearerIds))
         if overlapBearerIds:
-            print "Bearer resource allocation failure for IMSI: {} existing bearer ids {}".format(imsi, overlapBearerIds)
             result = self.ErrorPreExistingBearerContext
             self.__notifyProcedureCompletion__(result)
             return

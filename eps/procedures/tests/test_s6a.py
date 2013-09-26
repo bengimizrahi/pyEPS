@@ -2,9 +2,9 @@ import unittest
 import time
 import random
 
-from epc.utils.io import IoService, localhost
-from epc.procedures.mme.s6a import AuthenticationInformationRetrievalProcedureHandler as MmeAuthProcedureHandler
-from epc.procedures.hss.s6a import AuthenticationInformationRetrievalProcedureHandler as HssAuthProcedureHandler
+from eps.utils.io import IoService, localhost
+from eps.procedures.mme.s6a import AuthenticationInformationRetrievalProcedureHandler as MmeAuthProcedureHandler
+from eps.procedures.hss.s6a import AuthenticationInformationRetrievalProcedureHandler as HssAuthProcedureHandler
 
 
 class TestS1SetupProcedureHandler(unittest.TestCase):
@@ -36,6 +36,7 @@ class TestS1SetupProcedureHandler(unittest.TestCase):
         for _ in range(n):
             randomImsi = visitedPlmnId + "".join([str(random.randrange(0, 10)) for __ in range(10)])
             mmeAuthProcHandler.execute(randomImsi, visitedPlmnId)
+            time.sleep(0.1)
         time.sleep(1.0)
         self.assertEqual(self.mmeSuccess, n)
         self.assertEqual(self.hssSuccess, n)
