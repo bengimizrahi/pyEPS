@@ -16,7 +16,8 @@ class StateMachine(object):
     def changeState(self, stateClass):
         if hasattr(self.state, "__exit__"):
             self.state.__exit__()
-        self.state = stateClass(self.context)
+        self.state = stateClass()
+        self.state.context = self.context
         self.state.stateMachine = self
         if hasattr(self.state, "__enter__"):
             self.state.__enter__()
